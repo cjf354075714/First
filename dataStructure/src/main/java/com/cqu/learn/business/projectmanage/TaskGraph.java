@@ -10,16 +10,15 @@ public class TaskGraph {
     private Task[] tasks;
     private boolean[] isVisited;
     private int[][] edges;
+    private int length;
 
     public TaskGraph(Task[] tasks, Link[] links) {
         this.tasks = tasks;
         this.links = links;
-        isVisited = new boolean[tasks.length];
-        edges = new int[tasks.length][tasks.length];
+        this.length = tasks.length;
+        isVisited = new boolean[length];
+        edges = new int[length][length];
 
-        for (Link link : this.links) {
-
-        }
     }
 
 }
