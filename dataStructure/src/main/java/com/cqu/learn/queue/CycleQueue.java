@@ -28,4 +28,42 @@ public class CycleQueue implements Queue {
     public boolean isFull() {
         return (tail + 1) % size == head;
     }
+
+    public boolean enQueue(int value) {
+        if (isFull()) {
+            return false;
+        }
+        if (isEmpty()) {
+            head ++;
+        }
+        tail = (tail ++) %size;
+        data[tail] = value;
+        return true;
+    }
+
+    public boolean deQueue() throws Exception{
+        if (isEmpty()) {
+            return false;
+        }
+        data[head] = 0;
+        if (head == tail) {
+            head = -1;
+            tail = -1;
+        } else {
+            head = (head + 1) % size;
+        }
+        return true;
+    }
+    public int Rear() {
+        if (isEmpty()) {
+            return -1;
+        }
+        return data[tail];
+    }
+    public int Front() {
+        if (isEmpty()) {
+            return -1;
+        }
+        return data[head];
+    }
 }
