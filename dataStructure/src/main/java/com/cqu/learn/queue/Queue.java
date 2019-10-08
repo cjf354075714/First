@@ -11,25 +11,6 @@ import java.util.List;
  * 数组的话，遍历和索引位寻找方便，但是大小固定
  * 链表大小不固定，但是索引难以维护
  */
-public class Queue {
+public interface Queue {
 
-    private Object[] data;
-    private int head = -1;
-    private int tail = head;
-    private int size = 0;
-
-    public Queue(int size) {
-        data = new Object[size];
-        this.size = size;
-    }
-    public void add(Object item) throws Exception{
-        if (tail >= size) {
-            throw new Exception("队列已满");
-        }
-        tail++;
-        data[tail] = item;
-    }
-    public Object pop() throws Exception {
-        return null;
-    }
 }
