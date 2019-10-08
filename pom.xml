@@ -10,6 +10,7 @@
   <modules>
     <module>dataStructure</module>
       <module>base</module>
+      <module>tomcat</module>
   </modules>
   <packaging>pom</packaging>
 
