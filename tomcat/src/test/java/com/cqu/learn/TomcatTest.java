@@ -1,17 +1,14 @@
 package com.cqu.learn;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
+import static org.junit.Assert.assertTrue;
+
 /**
- * Unit test for simple App.
+ * @author Feng
+ * @date 2019/10/8
  */
-public class AppTest 
-{
-    /**
-     * Rigorous Test :-)
-     */
+public class TomcatTest {
     @Test
     public void shouldAnswerWithTrue()
     {

@@ -18,7 +18,7 @@ import java.util.Date;
  * Hello world!
  *
  */
-public class App 
+public class BaseApp
 {
     public static void main( String[] args ) throws Exception {
         RandomAccessFile file = new RandomAccessFile("H:\\LocalRepository\\GitLocalRepo\\learn\\base\\src\\main\\java\\com\\cqu\\learn\\nio\\readme.txt", "rw");

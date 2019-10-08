@@ -6,7 +6,7 @@ import com.cqu.learn.graph.Graph;
  * Hello world!
  *
  */
-public class App 
+public class DataStructureApp
 {
     public static void main( String[] args ) throws Exception {
         Graph graph = new Graph(6);
