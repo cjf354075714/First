@@ -5,25 +5,17 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.cqu.learn</groupId>
-  <artifactId>learn</artifactId>
+  <artifactId>algorithm</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <modules>
-    <module>dataStructure</module>
-      <module>base</module>
-      <module>tomcat</module>
-      <module>designPattern</module>
-      <module>algorithm</module>
-  </modules>
-  <packaging>pom</packaging>
 
-  <name>learn</name>
+  <name>algorithm</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <dependencies>
@@ -33,36 +25,7 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.10</version>
-      <scope>provided</scope>
-    </dependency>
-
-
   </dependencies>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.11</version>
-        <scope>test</scope>
-      </dependency>
-
-      <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.10</version>
-        <scope>provided</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <build>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
