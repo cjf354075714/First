@@ -10,7 +10,7 @@ connector负责与连接有关的事情，比如将http连接转化为socket连�
 container用于封装和管理servlet，以及处理这些http请求
 一个service下可以有多个connector，但是只能有一个container，因为连接处理可以处理http、https等
 但是处理请求只能有一个container，因为如果有多个处理器的话，肯定会冲突啊
-所以只有一个server嘛，那么在tomcat/conf中就有一个server.xml文件，就是用来给该对象进行配置的
+所以只有一个container嘛，那么在tomcat/conf中就有一个server.xml文件，就是用来给该对象进行配置的
 包括启动监听的端口啊，断开监听的端口啊什么的。这个配置文件的编写格式，很好的提现了：
 一个server有多个service，一个service有多个connector和container等
 
@@ -52,15 +52,4 @@ container是基于pipeline-value的模式来处理请求的
 Engine->Host->Context->Wrapper，当调用Wrapper里面的StandardWrapperValue之后，就会创建FilterChain
 接着就是开始执行filter，执行servlet中的service方法等
 
-接下来是翻译：
-tomcat是一门实现了java servlet、jsp、JEL、java websocket的开源的技术。servlet、jsp、jel、websocket规范是在java community
-process 下开发的。
-
-tomcat在开放和可参与的环境下开发的，并且在 apache license version 2 协议下发布。tomcat试图成为一个
-来自世界各地的优秀的开发者的一款产品。我们邀请您加入这个开源开发项目，了解更多关于加入的信息：点击这里
-
-tomcat在众多不同领域与组织为大量的大规模、关键任务的web应用提供了动力，一些我们的使用者和他们的故事在这个页面列出
-点击这里
-
-tomcat 9.0.26版本
-tomcat项目组骄傲的发布tomcat 9.0.26版本，与9.0.24版本相比，显著的改变包括：
+2019/10/9
