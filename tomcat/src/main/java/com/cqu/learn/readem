@@ -53,3 +53,14 @@ Engine->Host->Context->Wrapper，当调用Wrapper里面的StandardWrapperValue�
 接着就是开始执行filter，执行servlet中的service方法等
 
 2019/10/9
+
+源码解读：
+非源码版本的tomcat的启动方式是双击startup.bat，这个批处理文件最终调用的是java的一个main class
+Bootstrap.init() -> catalina.init() -> server.init() -> service.init() -> Engine.init() + Executor.init()
++ connector.init() -> protocolHandler.init() //按照这个逻辑去启动所有的组件的初始化方法，tomcat底层是nio的socket
+接着再按照这个顺序去start所有的组件
+
+启动流程：
+根据请求的url定位一个servlet，是一个多层次的map，key是url，value是servlet
+EndPoint活启动一个socket，用来接收请求（实际上是endpoint内部的acceptor接收到的请求）然后交给processor
+来处理请求，adapter会将请求的路径映射到Mapper这个多层次map中
