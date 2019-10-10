@@ -1,6 +1,7 @@
 package com.cqu.learn;
 
 import com.cqu.learn.datatype.DefaultValue;
+import com.cqu.learn.nio.StreamIO;
 import com.cqu.learn.polymorphism.ObjectToString;
 import sun.nio.ch.FileChannelImpl;
 
@@ -21,9 +22,7 @@ import java.util.Date;
 public class BaseApp
 {
     public static void main( String[] args ) throws Exception {
-        RandomAccessFile file = new RandomAccessFile("H:\\LocalRepository\\GitLocalRepo\\learn\\base\\src\\main\\java\\com\\cqu\\learn\\nio\\readme.txt", "rw");
-        FileChannel fileChannel = file.getChannel();
-        ByteBuffer buffer = ByteBuffer.allocate(1);//这里定义了一个buffer的大小，就相当于byte数组
-
+        StreamIO streamIO = new StreamIO();
+        streamIO.solution();
     }
 }
