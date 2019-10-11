@@ -16,11 +16,15 @@ public class FileReaderTest {
         char[] message = new char[1024];
         try {
             Reader fileReader = new FileReader(file);
-            int i = fileReader.read(message, 0, 15);
-            System.err.println(i);
-            for (int index = 0; index < i && index < message.length; index ++) {
-                System.out.print(message[index]);
-            }
+            int single = fileReader.read();
+            byte s = (byte) (single);
+            System.err.println(single);
+            System.err.println((char) single);
+//            int i = fileReader.read(message);
+//            System.err.println(i);
+//            for (int index = 0; index < i && index < message.length; index ++) {
+//                System.out.print(message[index]);
+//            }
             fileReader.close();
         } catch (IOException e) {
             e.printStackTrace();
