@@ -378,3 +378,45 @@ wait() 方法，挂起，然后通知其他等待中的读线程，将缓存数�
 如果读多了，那么就挂起，然后等待写线程写入数据
 1，这种模式有点像消费者生产者模式
 2，这种线程之间交互信息的模式，本质上还是借用了同一个进程里面共享内存和 wait() 和 notify() 这个两个方法
+
+
+FilterInputStream & FilterOutputStream
+这个两个类实际上是一个包装类，它们有一个 InputStream 或者 OutputStream 的内部实例，所有的方法全都是调用
+该实例的方法，这只是做出了一个规范，它的子类是 Buffed 和 Data 等，这才是重载了内部方法，用于包装的子类
+这种模式叫装饰器模式
+
+BufferedInputStream & BufferedOutputStream
+
+BufferedInputStream 是一个内部具有缓冲数据载体的字节输入流
+//默认的缓存数组大小
+private static int DEFAULT_BUFFER_SIZE = 8192;
+
+//可用的缓存数组大小，-8 是为了保证特殊虚拟机再给数组加保留内容时，的一个妥协
+private static int MAX_BUFFER_SIZE = Integer.MAX_VALUE - 8;
+
+//缓存数组
+protected volatile byte buf[];
+
+//缓冲区中的字节数
+protected int count;
+
+//缓冲区当前位置的索引
+protected int pos;
+
+//最后一次调用 mark 方法时 pos 字段的值
+//不知道有啥用
+protected int markpos = -1;
+
+//markpos 的最大值
+protected int marklimit;
+
+//就是这个函数，是给 buf 这个数组进行填充的
+private void fill() throws IOException {
+    byte[] buffer = getBufIfOpen();
+
+    //规范 markpos 的值
+    if (markpos < 0) {
+        pos = 0;
+    }
+
+}
