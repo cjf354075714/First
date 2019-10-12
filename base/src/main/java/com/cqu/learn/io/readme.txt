@@ -104,3 +104,277 @@ toByteArray() 将内部的字节数组转化为数组对象
 toString() 将内部的字节数组按照默认字符集或者指定字符集转化为字符串对象
 
 PipedInputStream & PipedOutputStream
+这两个类配套使用，它们实际上是对同一个字节缓存数组进行操作，一个读（PipedInputStream），一个写（PipedOutputStream）
+如果数组满了，那么就需要阻塞 PipedInputStream，相反就阻塞 PipedOutputStream
+虽然表面上说的是 Piped 管道之间的通信，但实际上，由于两个线程是在同一台计算机的同一个进程里面的
+所以并没有什么管道，只是两个之间相互调用，直接操作底层的数组罢了（另外还涉及到线程的一些知识）
+
+PipedOutputStream 是一个线程调用，用于向管道中传输数据的类
+
+public void connect(PipedInputStream snk);
+该函数用于将 PipedOutputStream 与 PipedInputStream 相连接起来
+并且重置 PipedInputStream 的 in / out 的索引位，这两个索引位是为了维护
+PipedInputStream 的内部字节数组的数据的准确性而设立的
+
+public void write(int b);
+底层调用 PipedInputStream 的 receive() 方法，自己只是单纯的判断连接是否稳定等
+
+public void write(byte[] b int off, int len);
+底层调用 PipedInputStream 的 receive() 方法
+
+public void flush();
+通知其他线程使用 PipedInputStream 来读取缓存字节数组中的数据
+
+public void close();
+通知 PipedInputStream 数据已经传输完毕
+总结：该类只是单纯的调用 PipedInputStream 的一些方法，真正线程之间交流的还是 PipedOutputStream 的事
+
+PipedInputStream 是一个线程调用，也可能多个线程调用的用于获取另外线程传过来的数据的一个类
+
+protected byte buffer[];
+存储传输数据的底层数组
+
+protected int in = -1;
+表示，下一个传输过来的字节在字节数组中存在的位置，这里写成 -1 只是为了方便后面判断是否数组为空，在真正
+给数组赋值的时候，是会先自增的
+
+protected int out = 0;
+表示，下一个将要读取的字节在字节数组中存在的位置
+
+该方法表示，PipedOutputStream 写入单个数据给 PipedInputStream，有 synchronized 关键字，是线程独占方法
+protected synchronized void receive(int b) throws IOException {
+    // 判断连接状态是否正常
+    checkStateForReceive();
+
+    //标记写数据端的线程
+    writeSide = Thread.currentThread();
+    if (in == out) {
+        //如果 in = out，则表示，字节缓存数组已经满了，就需要等待读取线程调用本类来读取数据，让出位置
+        awaitSpace();
+    }
+    if (in < 0) {
+        //就是这个，如果 in < 0 注意，只有 in = -1 也就是初始化的时候，才有可能 < 0
+        // in < 0 表示，缓存字节为空，需要初始化字节存放位置和字节读取位置的索引值
+        // in = 0 就表示 in 这个字段，确实是下一个写入字节的存放位置
+        in = 0;
+        out = 0;
+    }
+
+    //给缓存数组赋值，只取 int 的低八位
+    //并将 in 向后移动一位
+    buffer[in++] = (byte)(b & 0xFF);
+
+    //如果存放的索引超过了缓存数组长度，就将索引置 0 重新开始
+    if (in >= buffer.length) {
+        in = 0;
+    }
+}
+
+//当数组被写满了之后，会调用的函数。注意，这个时候是写的那个线程来调用该方法
+//也就是说是 PipedOutputStream 来调用这个方法，它将通知所有占有 PipedInputStream 的锁的读的线程
+//来读取缓存数组中的数据，从而让出位置
+//判断周期是 1S 每隔 1S 都会判断一下数组是否满了
+//这里的被写满了，不是说数组写满了，而是 读取的字节读的很慢，但是写得很快，以至于 in = out 了
+//那我还没读的，你肯定不能覆盖，所以会阻塞
+private void awaitSpace() throws IOException {
+    while (in == out) {
+        checkStateForReceive();
+        notifyAll();
+        try {
+            wait(1000);
+        } catch (InterruptedException ex) {
+            IoUtils.throwInterruptedIoException();
+        }
+    }
+}
+
+//这个函数，是要将字节批量的赋值给内部的缓存数组，问题就是，哪些数组位是可以用的
+//哪些是不可以用的，这就需要 in 和 out 的大小来判断
+//读和写都针对同一个数组而言，但是不是同步的，也许我才读到第 5 位，你已经写到了第 10 位
+//而且，读写还是可以循环的
+synchronized void receive(byte[] b, int off, int len) throws IOException {
+    //检查状态是否正常
+    checkStateForReceive();
+    //记录读取线程对象，有啥用呢？
+    writeSide = Thread.currentThread();
+
+    //利用一个变量记录下还需要写入多少个字节
+    int bytesToTransfer = len;
+    //在 while 里面循环判断剩余需要写入字节数的大小
+    while (byteToTransfer > 0) {
+        if (in == out) {
+            awaitSpace();
+        }
+        //该变量用来记录，这次循环一共写进缓存的字节的数量
+        int nextTransferAmount = 0;
+        //如果 out < in 则表示，写的进度快于读，所以剩下可以存数据的位置就是
+        //[in, buffer.length - 1] 和 [0, out]
+        //数据就先写入到 [in, buffer.length - 1]，这样选择也很明显了
+        if (out < in) {
+            //算出这次循环能够写入多少个字节
+            nextTransferAmount = buffer.length - in;
+        }
+        // in < out 表示有两种情况，
+        // 这个数组还没有赋值，还是空的，那就需要重新计算索引位
+        // 这个数组的剩下可用区间就是 [in, out]
+        else if (in < out) {
+            if (in == -1) {
+                in = out = 0;
+                nextTransferAmount = buffer.length - in;
+            } else {
+                //那么 nextTransferAmount 的值就应该是 out - in;
+                nextTransferAmount = out -in;
+            }
+        }
+        //nextTransferAmount 是理论上可以写入的字节数
+        //byteToTransfer 是实际上的字节数
+        //那肯定是要根据实际的来，如果理论上的自己数比实际上多
+        if (nextTransferAmount > byteToTransfer) {
+            nextTransferAmount = byteToTransfer
+        }
+        assert(nextTransferAmount > 0);
+        //调用的是底层的数组的复制函数
+        //将 b 数组从 off 位开始，复制到 buffer 的从 in 位置开始，长度时 nextTransferAmount
+        System.arraycopy(b, off, buffer, in, nextTransferAmount);
+
+        //赋值完了，就要重新计算 buffer 和传入 b 的数据索引位
+        bytesToTransfer -= nextTransferAmount;
+        off += nextTransferAmount;
+        in += nextTransferAmount;
+
+        //实际上这里就在维护 in 的值，如果传入的数据太多，数组剩余数据写不下，那么就重新置 0
+        //区间 [0, out] 也就没有意义了
+        if (in >= buffer.length) {
+            in = 0;
+        }
+    }
+}
+
+//自己设置好写线程的 flag，并且通知其他读线程可以写入了
+synchronized void receivedLast() {
+    closedByWriter = true;
+    notifyAll();
+}
+
+public synchronized int read() throws IOException{
+
+    //判断是否连接上
+    if (!connected) {
+        throw new IOException("Pipe not connected");
+    } else if (closedByReader) {
+        //判断读取线程是否已经关闭了
+        throw new IOException("Pipe closed");
+    } else if (writeSide != null && !writeSide.isAlive() && !closedByWriter && (in < 0)) {
+        //???
+        throw new IOException("Write end dead");
+    }
+    readSide = Thread.currentThread();
+
+    //检查连接的状态
+    int trials = 2;
+    //如果缓存数组里面没有数据，则先检查连接的状态，再通知写的线程，可以写数据了
+    while (in < 0) {
+        if (closedByWriter) {
+            return -1;
+        }
+        if ((writeSide != null) && (!writerSide.isAlive() && (--trials < 0))) {
+            throw new IOException("Pipe broken");
+        }
+        //通知其他线程
+        notifyAll();
+        try{
+            wait(1000);
+        } catch (InterruptedException ex) {
+            IoUtils.throwInterruptedIoException();
+        }
+    }
+    //自增 out 并且返回读取的字节
+    int ret = buffer[out++] & 0xff;
+    //维护 out 的值，如果超过了数组的长度，就需要重新从头开始读取
+    if (out >= buffer.length) {
+        out = 0;
+    }
+    //表示读取的数据的索引已经追上了写入的数据，则当前缓存区域为空，in = -1
+    //实际上只是读满了而已，并不是数组为空，开发认为地任务它为空
+    if (in == out) {
+        in = -1；
+    }
+}
+
+public synchronized int read(byte[] b, int off, int len) throws IOException {
+    //这里一些安全判断，比如数组长度等等的大小判断，我们写的代码，为什么有异常报出来，就是这些代码的逻辑
+    if (b == null) {
+        throw new NullPointerException();
+    } else if (off < 0 || len < 0 || len > b.length - off) {
+        throw new IndexOutOfBoundsException();
+    } else if (len == 0) {
+        return 0;
+    }
+
+    //先读取一个字节，读不到就阻塞，读到了，后面就只读取 len - 1 个字节了
+    int c = read();
+
+    //读不到，就返回
+    if (c < 0) {
+        return -1;
+    }
+
+    //记录已近读取到的数据的长度
+    int rlen = 1;
+    while ((in >= 0) && (len > 1)) {
+
+        //记录当前可以读取的数据的长度
+        int available;
+
+        //与批量接收的逻辑一样，此时可以读取的数据的区间在 [out, in)
+        if (in > out) {
+            //正常情况，不可能出现 buffer.length > in 的情况
+            //这里只是简单的加个判定吧
+            available = Math.min((buffer.length - out), (in - out));
+        }
+        //和上面类似，现在可读的区间是 [0, in) 和 [out, buffer.length)
+        else {
+            available = buffer.length - out;
+        }
+        if(available > (len - 1)) {
+            available = len -1;
+        }
+        //开始复制数组
+        System.arraycopy(buffer, out, b, off + rlen, available);
+        //读取字节索引向后移动
+        out += available;
+        //自增已读取到的数据
+        rlen += available;
+        //计算还需读取的数据
+        len -= available;
+        if (out >= buffer.length) {
+            out = 0;
+        }
+        if (in == out) {
+            in = -1;
+        }
+    }
+
+    //指明哪些是可以读取的数据，就是数组区间的某些字节数量
+    public synchronized int available() throws IOException {
+        if(in < 0)
+            // 管道中无数据
+            return 0;
+        else if(in == out)
+            // 缓存数组已满
+            return buffer.length;
+        else if (in > out)
+            // [out, in)区间内为有效数据
+            return in - out;
+        else
+            // in < out
+            // [in, out)区间为无效数据, 其余为有效数据, 所以长度为 buffer.length - (out - in)
+            return in + buffer.length - out;
+    }
+}
+总结一下：实际上就是不同的线程，对 PipedInputStream 类实例的竞争
+很多个写线程可能同时竞争这个对象的 write() 的执行权，如果写入的数据过多，那么就会进入
+wait() 方法，挂起，然后通知其他等待中的读线程，将缓存数组中的字节读出来腾出位置
+如果读多了，那么就挂起，然后等待写线程写入数据
+1，这种模式有点像消费者生产者模式
+2，这种线程之间交互信息的模式，本质上还是借用了同一个进程里面共享内存和 wait() 和 notify() 这个两个方法
