@@ -4,21 +4,16 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.cqu.learn</groupId>
-  <artifactId>learn</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <modules>
-    <module>dataStructure</module>
-      <module>base</module>
-      <module>tomcat</module>
-      <module>designPattern</module>
-      <module>algorithm</module>
-	  <module>operationSystem</module>
-    <module>network</module>
-  </modules>
-  <packaging>pom</packaging>
+  <parent>
+    <artifactId>learn</artifactId>
+    <groupId>com.cqu.learn</groupId>
+    <version>1.0-SNAPSHOT</version>
+  </parent>
 
-  <name>learn</name>
+  <artifactId>operationSystem</artifactId>
+  <version>1.0-SNAPSHOT</version>
+
+  <name>operationSystem</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
@@ -32,39 +27,9 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.10</version>
-      <scope>provided</scope>
-    </dependency>
-
-
   </dependencies>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.11</version>
-        <scope>test</scope>
-      </dependency>
-
-      <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.10</version>
-        <scope>provided</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <build>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
