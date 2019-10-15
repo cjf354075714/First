@@ -405,18 +405,125 @@ protected int pos;
 
 //最后一次调用 mark 方法时 pos 字段的值
 //不知道有啥用
+//就是说，如果我调用一次 mark 方法，那么就想到于在缓冲数组的当前位置 pos 上加了一个标记
+//这个标记是用于之后 reset() 方法的，如果调用了这个方法，pos 这个代表着缓冲数组的索引位的值
+//就会重新回到 mark 这个值上来
 protected int markpos = -1;
 
 //markpos 的最大值
+//这个值的意思是：BufferedInputStream 对这个 mark 的维护，只到 markpos 这个字节处停止
+//如果读取的过多的字节，那 BufferedInputStream 是不会继续维护这个 mark 的值了
 protected int marklimit;
 
 //就是这个函数，是给 buf 这个数组进行填充的
+//填充字节需要考虑是否已经调用了 mark 方法，不同的情况下，需要不同的处理
 private void fill() throws IOException {
     byte[] buffer = getBufIfOpen();
 
-    //规范 markpos 的值
+    // < 0 表示，开发没有调用过 mark 方法，我也就不需要维护，直接将 pos = 0
+    // count 等于接下来将要读取的字节数
+    // buffer 这个缓冲字节数组直接被重新覆盖掉
     if (markpos < 0) {
         pos = 0;
     }
+    //就表示，已经读完了在 BufferedInputStream 中的缓存数据
+     else if ( pos >= buffer.length) {
+        //表示，调用了 mark 方法，并且有一段数据是需要保存下来的，因为该给开发 reset 方法的数据
+        //保留数据区间是 [markpos, pos)
+        if (markpos > 0) {
+            //sz 表示需要保存的字节数目
+            int sz = pos - markpos;
+            //直接将缓存数组中的开头的数据覆盖掉，反正大小是够得
+            System.arraycopy(buffer, markpos, buffer, 0, sz);
+            pos = sz;
+            markpos = 0;
+        //开发定义的限制数目比缓存数组本身的长度还长，那也就没有维护的必要了
+        } else if (buffer.length >= marklimit) {
+            markpos = -1;
+            pos = 0;
+        //现在 缓冲数组已经写满了，并且 mark 还能用，就需要扩容缓存数组，扩容大小按照翻倍的规格来
+        } else {
+            int nsz - ()//后面我来继续写
+        }
+     }
 
 }
+
+public synchronized int read() throws IOException {
+    //pos 表示读的标记位，count 表示数组中的可用字节数
+    //实际上，pos 是下一个要读的标记位的值，为啥要实现判断呢
+    //这个判断表明，可用字节数将要读完了，需要你填充字节数
+    if ( pos >= count) {
+        fill();
+        //即使填充完毕了，还是不够，那么就不存在数据了，也就读到了 EOF
+        if ( pos >= count) {
+            return -1;
+        }
+    }
+    // 返回数组中的数据的低八位
+    return getBufIfOpen() [pos++] & 0xff;
+}
+
+private byte[] getBufIfOpen() throws IOException {
+    byte[] buffer = buf;
+    if (buffer == null) {
+        throw new IOException("Stream closed");
+    }
+    return buffer;
+}
+
+
+BufferedOutputStream 是一个包装写入字节流
+这个类本质上比较简单，内部维护了一个缓存数组，而且这个数组没有大小
+每次写入数据的时候，只是先写到内存里面去，然后如果这个数组满了，或者一次性写入的
+数据太多了，就直接写入到目标，其他的情况下，才会使用这个缓存数组记录下数据
+flush() 这个函数，本质上是调用被包装的节点流来写入数据
+
+
+DataInputStream & DataOutputStream
+
+DataInputStream 是一个包装流，包装面向字节的输入流
+允许读取底层输入流中的 java 基本类型
+内部还是有一个大小为 80 的字节数组，用于缓存
+
+readFully(byte[] b) 循环读取 b.length 个字节到数组中，因为内部缓存可能没有这么大，需要循环读取
+
+先不写了，DataInputStream 和 DataOutputStream 是简单的包装流
+比如，写一个 int 的时候，就写 4 个 byte，分别取高8 16 24 32 位，然后写入就行了
+读这个int 的时候，自然读四个字节，然后相加，强制转化为 int 就行了
+这里采用的编码应该是UTF-16。
+
+PrintStream 是一个专门使用平台编码集的输出流对象
+这也是为什么 java 控制台没有乱码的原因，那么，调用 print 方法，会直接写入到数据的去向
+那么就可以使用 PrintStream 直接作为文件的写入流，要方便很多
+底层调用的是 BufferWriter，还是使用的是System.copyarray();
+
+包装流就说完了，主要有两个优势：
+减少操作系统读取数据的次数，比如 100 个字节，读取两次，包装流可以一次读完
+减少编码器的使用，比如写入字符的时候，每写一次都需要进行一次字符转换，浪费性能
+使用包装流，只是写入到了内存中，在 flush 的时候，才会真正写入到内存，调用一次编码器 StreamDecoder
+
+FileInputStream & FileOutputStream
+这两个类是用于文件的访问的，显然，典型的 read write 是 native 方法，是我们看不见的
+
+InputStreamReader & OutputStreamWriter
+这两个类用于 将字节转化为字符，是装饰器模式的具体实现
+底层调用的是 StreamDecoder 和 StreamEncoder
+在构建的时候，可以指定编码格式 "UTF-8"
+
+ObjectInputStream & ObjectOutputStream 是用于对象的序列化
+主要是将一个实例对象转化为二进制的字节码，然后写入一个文件
+下次就可以直接读取这个类对象了
+
+
+实例1：
+现在来说明一下，InputStreamReader 是怎么工作的
+InputStreamReader 是将字节转化为字符的类
+
+它内部调用的是 StreamDecoder 将我们输入的字符数组，转化为字节系列，然后写入到我们传入的 OutputStream 里面
+比如：
+首先定义一个 FileReader 现在我要读取文件里面的字符（表面上是字符，内地里是字节）
+但实际上，这个类的 read 函数，是FileReader的父类 InputStreamReader 来定义的，调用的是父类的函数
+在这个父类函数里面，会将自己作为参数传递给 StreamDecoder
+InputStreamReader 这个类的 read 函数，是会调用 StreamDecoder 的 read 函数
+而 StreamDecoder 的 read 函数，会调用 自己的逻辑字节字符转化好之后，调用我们传递的 InputStream 的 read 函数
