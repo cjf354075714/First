@@ -8,62 +8,84 @@ package com.cqu.learn.queue;
  * 头节点的索引也是一直增加的，所以在入队和出队的过程中
  * 需要根据队列的大小取模运算
  */
-public class CycleQueue implements Queue {
-    private int[] data;
-    private int head;
-    private int tail;
-    private int size;
+public class CycleQueue <T> implements Queue<T> {
 
-    public CycleQueue(int k) {
-        data = new int[k];
-        head = -1;
-        tail = -1;
-        size = k;
+    /**
+     * 队列数据载体
+     */
+    private Object[] data;
+
+    /**
+     * 队列数据数量
+     */
+    private int size = 0;
+
+    /**
+     * 队列数据当前索引
+     */
+    private int tail = -1;
+
+    /**
+     * 队列数据头部索引
+     */
+    private int head = -1;
+
+    public CycleQueue(int size) {
+        this.size = size;
+        this.data = new Object[size];
     }
 
     public boolean isEmpty() {
-        return head == -1;
+        return this.head == this.tail && this.head == -1;
     }
 
     public boolean isFull() {
-        return (tail + 1) % size == head;
+        return this.tail % this.size + 1 == this.head;
     }
 
-    public boolean enQueue(int value) {
+    public void enQueue(Object data) throws Exception {
         if (isFull()) {
-            return false;
+            throw new Exception("循环队列已满");
         }
         if (isEmpty()) {
-            head ++;
+            this.head++;
         }
-        tail = (tail ++) %size;
-        data[tail] = value;
-        return true;
+        this.tail = (this.tail + 1) % this.size;
+        this.data[this.tail] = data;
+
     }
 
-    public boolean deQueue() throws Exception{
+    @SuppressWarnings("unchecked")
+    public T deQueue() throws Exception {
         if (isEmpty()) {
-            return false;
+            throw new Exception("循环队列为空");
         }
-        data[head] = 0;
-        if (head == tail) {
-            head = -1;
-            tail = -1;
-        } else {
-            head = (head + 1) % size;
+        T temp = null;
+        if (this.head == this.tail) {
+            temp = (T) this.data[this.head];
+            System.arraycopy(data, 0, data, 0, size);
+            data[this.head] = null;
+            this.head = -1;
+            this.tail = -1;
+            return temp;
         }
-        return true;
+        temp = (T) this.data[this.head];
+        System.arraycopy(data, 0, data, 0, size);
+        data[this.head] = null;
+        this.head = this.head % this.size + 1;
+        return temp;
     }
-    public int Rear() {
-        if (isEmpty()) {
-            return -1;
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Object o : this.data) {
+            if (null == o) {
+                stringBuilder.append("*").append(" ");
+            }else {
+                stringBuilder.append(o.toString()).append(" ");
+            }
         }
-        return data[tail];
-    }
-    public int Front() {
-        if (isEmpty()) {
-            return -1;
-        }
-        return data[head];
+        return stringBuilder.toString();
     }
 }

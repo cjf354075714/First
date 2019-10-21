@@ -1,0 +1,5 @@
+Tomcat 整体架构
+
+一，基本结构
+Tomcat 的底层管理者是 Server 服务器，这个服务器掌管下发所有 Service 服务的生命周期
+Service 才是真正的服务提供者，该组件下，有 Container 和 Connector 这两个组件，作用就是获取请求和相应请求

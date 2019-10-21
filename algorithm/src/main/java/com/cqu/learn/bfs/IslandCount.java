@@ -60,4 +60,8 @@ public class IslandCount {
         System.err.println(num);
         return num;
     }
+
+    public void dfs(char[][] grid) {
+
+    }
 }
