@@ -15,6 +15,6 @@ public class AlgorithmApp
                 {'1', '1', '1'}
         };
         IslandCount islandCount = new IslandCount();
-        islandCount.numIslands(grid);
+        System.err.print(islandCount.numIslands2(grid));
     }
 }

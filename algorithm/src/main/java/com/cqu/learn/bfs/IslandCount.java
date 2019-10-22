@@ -5,13 +5,20 @@ import java.util.List;
 import java.util.Queue;
 
 /**
+ * 岛屿数量
  * @author Feng
  * @date 2019/10/9
- *
  *
  */
 public class IslandCount {
 
+    /**
+     * 广度有限遍历，显著的特点就是需要使用一个栈来保存临时遍历的变量
+     * 遍历完毕后，会将被遍历完毕后变量的下一个变量入栈
+     * 通过判断栈的大小从而遍历完所有变量
+     * @param grid 变量数组
+     * @return 岛屿数量
+     */
     public int numIslands(char[][] grid) {
         Queue<Integer> characterList = new LinkedList<>();
         int num = 0;
@@ -61,7 +68,38 @@ public class IslandCount {
         return num;
     }
 
-    public void dfs(char[][] grid) {
+    /**
+     *
+     * 深度优先遍历，显著的特点就是递归，递归遍历当前变量后
+     * 再递归遍历该变量的下一个变量
+     * @param grid 二维数组
+     * @return 岛屿数量
+     */
+    public int numIslands2(char[][] grid) {
+        int sum = 0;
+        int row = grid.length;
+        int col = grid[0].length;
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (grid[i][j] == '1') {
+                    sum ++;
+                    dfs(i, j, grid);
+                }
+            }
+        }
+        return sum;
+    }
 
+    private void dfs(int i, int j, char[][] grid) {
+        int row = grid.length;
+        int col = grid[0].length;
+        if (i < 0 || j < 0 || i >= row || j >= col || grid[i][j] == '0') {
+            return ;
+        }
+        grid[i][j] = '0';
+        dfs(i - 1, j, grid);
+        dfs(i, j - 1, grid);
+        dfs(i, j + 1, grid);
+        dfs(i + 1, j, grid);
     }
 }
