@@ -56,6 +56,7 @@ import org.apache.tomcat.util.res.StringManager;
 /**
  * Standard implementation of the <b>Server</b> interface, available for use
  * (but not required) when deploying and starting Catalina.
+ * Server 的标准实现
  *
  * @author Craig R. McClanahan
  */
@@ -74,6 +75,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
         super();
 
+        // 全局命名服务暂时先不看
         globalNamingResources = new NamingResourcesImpl();
         globalNamingResources.setContainer(this);
 
@@ -110,11 +112,13 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
     /**
      * The port number on which we wait for shutdown commands.
+     * 8005 是等待结束命令的端口，注意，结束服务的层级是在 server 上
      */
     private int port = 8005;
 
     /**
      * The address on which we wait for shutdown commands.
+     * 等待结束服务的主机地址
      */
     private String address = "localhost";
 
@@ -122,19 +126,24 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
     /**
      * A random number generator that is <strong>only</strong> used if
      * the shutdown command string is longer than 1024 characters.
+     * 如果停止命令的字符串长度超过 1024 个字符，才会启动这个随机数字生成器
      */
     private Random random = null;
 
 
     /**
      * The set of Services associated with this Server.
+     * 用来干活的 service，先只定义了一个
      */
-    private Service services[] = new Service[0];
+    private Service[] services = new Service[0];
+
+    // 这个应该是锁
     private final Object servicesLock = new Object();
 
 
     /**
      * The shutdown command string we are looking for.
+     * 停止命令的字符串参数
      */
     private String shutdown = "SHUTDOWN";
 
@@ -148,6 +157,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
     /**
      * The property change support for this component.
+     * 这个是用来监听字段发生变化之后，将要触发的事件
      */
     final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -164,6 +174,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
     /**
      * Server socket that is used to wait for the shutdown command.
+     * 在 Serve 里面就有一个 ServerSocket 去等待停止命令的到来
      */
     private volatile ServerSocket awaitSocket = null;
 
@@ -232,6 +243,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
     /**
      * Report the current Tomcat Server Release number
+     * 返回当前 Server 的信息，底层调用的是 ServerInfo 的静态方法，而该对象是通过读取文件的方式来获取信息
      * @return Tomcat release identifier
      */
     public String getServerInfo() {
@@ -339,6 +351,8 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
     /**
      * Add a new Service to the set of defined Services.
      *
+     * 添加一个新的 Service 对象到 Server 的数组中来
+     *
      * @param service The Service to be added
      */
     @Override
@@ -354,6 +368,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
             if (getState().isAvailable()) {
                 try {
+                    // 添加到 Server 之后，马上开始执行
                     service.start();
                 } catch (LifecycleException e) {
                     // Ignore
@@ -361,6 +376,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
             }
 
             // Report this property change to interested listeners
+            // 通知变量数组发生变化
             support.firePropertyChange("service", null, service);
         }
 
@@ -403,6 +419,9 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
         if (port==-1) {
             try {
                 awaitThread = Thread.currentThread();
+                // stopAwait 的初始值是 false，也就是说，原本是同步的
+                // 这个线程在调用完所有的组件之后，就会一直在这里等待，睡眠，循环
+                // 前提是 port = -1
                 while(!stopAwait) {
                     try {
                         Thread.sleep( 10000 );
@@ -417,6 +436,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
         }
 
         // Set up a server socket to wait on
+        // 创建一个 Socket 去监听 8005
         try {
             awaitSocket = new ServerSocket(port, 1,
                     InetAddress.getByName(address));
@@ -428,9 +448,12 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
         }
 
         try {
+            // 获取到当前的线程，这个线程就是主线程，也就是 init、start 各个组件的线程
+            // 只不过 init、start 的操作已经执行完毕了而已
             awaitThread = Thread.currentThread();
 
             // Loop waiting for a connection and a valid command
+            // stopAwait = false 这个循环将一直持续下去
             while (!stopAwait) {
                 ServerSocket serverSocket = awaitSocket;
                 if (serverSocket == null) {
@@ -444,6 +467,9 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
                     InputStream stream;
                     long acceptStartTime = System.currentTimeMillis();
                     try {
+                        // 就在这里，等待一个 Socket 连接
+                        // 就从这个 Socket 连接上读取一些字符串，并且这个字符串就和 "SHUTDOWN" 进行比较
+                        // 后面就是一些字符串的处理
                         socket = serverSocket.accept();
                         socket.setSoTimeout(10 * 1000);  // Ten seconds
                         stream = socket.getInputStream();
@@ -500,6 +526,10 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
                 // Match against our command string
                 boolean match = command.toString().equals(shutdown);
+                // 如果穿过来的信息个 "SHUTDOWN" 相比较是相等的
+                // 这个循环也就不存在了，这个线程也就执行完了
+                // 实际上这个就是远程 tomcat 的关闭操作，因为这个线程完毕了，就会返回调用的地方，也就是
+                // Catalina 的 start 方法，该方法会继续执行，执行 stop 方法，关闭所有组件，结束 tomcat
                 if (match) {
                     log.info(sm.getString("standardServer.shutdownViaPort"));
                     break;
@@ -795,6 +825,9 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
     /**
      * Invoke a pre-startup initialization. This is used to allow connectors
      * to bind to restricted ports under Unix operating environments.
+     *
+     * catalina 调用 load 方法，最终会调用到这个方法上面来
+     *
      */
     @Override
     protected void initInternal() throws LifecycleException {

@@ -80,21 +80,28 @@ public class StandardService extends LifecycleMBeanBase implements Service {
 
     /**
      * The set of Connectors associated with this Service.
+     *
+     * Service 里面的重要组件 connector
      */
     protected Connector connectors[] = new Connector[0];
     private final Object connectorsLock = new Object();
 
     /**
-     *
+     * Service 里面的重要组件 Executor，是线程池的重要部分
      */
     protected final ArrayList<Executor> executors = new ArrayList<>();
 
+    /**
+     * Service 里面的重要组件，Engine，所以以后就不用说什么 Service 下面是 connector + container 了，代码直接
+     * 说了，是 engine
+     */
     private Engine engine = null;
 
     private ClassLoader parentClassLoader = null;
 
     /**
      * Mapper.
+     * 映射器
      */
     protected final Mapper mapper = new Mapper();
 

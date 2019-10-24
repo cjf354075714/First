@@ -72,6 +72,7 @@ public class StandardEngine extends ContainerBase implements Engine {
             log.warn(sm.getString("standardEngine.jvmRouteFail"));
         }
         // By default, the engine will hold the reloading thread
+        // 该变量什么意思
         backgroundProcessorDelay = 10;
 
     }
@@ -95,6 +96,7 @@ public class StandardEngine extends ContainerBase implements Engine {
     /**
      * The JVM Route ID for this Tomcat instance. All Route ID's must be unique
      * across the cluster.
+     * 集群当中的，JVM 路由 ID，tomcat 集群实际上是 JVM 集群，每个集群自然需要唯一的 id
      */
     private String jvmRouteId;
 
@@ -110,6 +112,7 @@ public class StandardEngine extends ContainerBase implements Engine {
     /**
      * Obtain the configured Realm and provide a default Realm implementation
      * when no explicit configuration is set.
+     *  realm 是一个管理用户访问或者管理应用的组件，通过配置文件配置
      *
      * @return configured realm, or a {@link NullRealm} by default
      */

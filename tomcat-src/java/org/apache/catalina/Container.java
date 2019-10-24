@@ -32,20 +32,28 @@ import org.apache.juli.logging.Log;
  * optionally support a pipeline of Valves that process the request in an
  * order configured at runtime, by implementing the <b>Pipeline</b> interface
  * as well.
+ * Container 是一个可以接收来自客户端的请求和根据请求返回响应的对象，Container 也可以通过
+ * 实现 Pipeline 接口的形式选择支持一个管道阀的机制，这将会在运行时按照配置的顺序处理请求
  * <p>
+ *     ？？？
  * Containers will exist at several conceptual levels within Catalina.  The
  * following examples represent common cases:
  * <ul>
  * <li><b>Engine</b> - Representation of the entire Catalina servlet engine,
  *     most likely containing one or more subcontainers that are either Host
  *     or Context implementations, or other custom groups.
+ *     引擎，Catalina 中 Servlet 引擎实例的代表，大部分情况下都包含一个或多个子容器，
+ *     它们可能是 host 或者 context 实现或者其他的用户组
  * <li><b>Host</b> - Representation of a virtual host containing a number
  *     of Contexts.
+ *     主机，Context 中包含一个数字的虚拟主机的代表
  * <li><b>Context</b> - Representation of a single ServletContext, which will
  *     typically contain one or more Wrappers for the supported servlets.
+ *     单个 Servlet 容器的代表，它可能典型的包含一个或者多个支持 Servlet 协议的 Wrapper
  * <li><b>Wrapper</b> - Representation of an individual servlet definition
  *     (which may support multiple servlet instances if the servlet itself
  *     implements SingleThreadModel).
+ *     Wrapper，...
  * </ul>
  * A given deployment of Catalina need not include Containers at all of the
  * levels described above.  For example, an administration application

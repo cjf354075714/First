@@ -44,6 +44,10 @@ import org.apache.juli.logging.LogFactory;
  * other classes they depend on, such as an XML parser) out of the system
  * class path and therefore not visible to application level classes.
  *
+ * catalina 的启动加载器，这个应用构造了一个包含加载在 catalina.home 下的 jar 类加载器和一个常规启动器
+ * 这样周折的应用是为了保证 catalina 内核文件（和其他依赖文件比如 XML 解析器）不依赖系统类加载器。因此，他们也就对
+ * 应用级别的类文件不可见
+ * @author Feng
  * @author Craig R. McClanahan
  * @author Remy Maucherat
  */
@@ -53,25 +57,33 @@ public final class Bootstrap {
 
     /**
      * Daemon object used by main.
+     * 当前类的类实例
      */
     private static Bootstrap daemon = null;
 
+    /**
+     * catalina 所依赖的文件路径
+     */
     private static final File catalinaBaseFile;
     private static final File catalinaHomeFile;
 
     private static final Pattern PATH_PATTERN = Pattern.compile("(\".*?\")|(([^,])*)");
 
+    // 该静态代码块的目的就是在类加载前，拿到项目运行的配置文件和项目文件的绝对路径
     static {
         // Will always be non-null
+        // 获取当前的工作区，也就是这个项目的工作区
         String userDir = System.getProperty("user.dir");
 
         // Home first
+        // 获取 VM Option 中的可选参数，指定的是配置文件和项目的目录
         String home = System.getProperty(Globals.CATALINA_HOME_PROP);
         File homeFile = null;
 
         if (home != null) {
             File f = new File(home);
             try {
+                // 获取一个文件对象在计算机上的绝对定位
                 homeFile = f.getCanonicalFile();
             } catch (IOException ioe) {
                 homeFile = f.getAbsoluteFile();
@@ -129,18 +141,23 @@ public final class Bootstrap {
 
     /**
      * Daemon reference.
+     * catalina 对象的引用，最终是调用反射获取的类实例
      */
     private Object catalinaDaemon = null;
 
 
+    // 公共类加载器
     ClassLoader commonLoader = null;
+
+    // catalina 类加载器（线程上下文类加载器）
     ClassLoader catalinaLoader = null;
+
+    // 分享类加载器
     ClassLoader sharedLoader = null;
 
-
-    // -------------------------------------------------------- Private Methods
-
-
+    /**
+     * 初始化类加载器，本质上都是 URLClassLoader
+     */
     private void initClassLoaders() {
         try {
             commonLoader = createClassLoader("common", null);
@@ -158,6 +175,15 @@ public final class Bootstrap {
     }
 
 
+    /**
+     * 创建类加载器的方法，本质上是传入 jar 文件目录，jar 所在文件的目录作为参数
+     * 读取的目录是在文件里面的，调用的还是 InputStream 和 Properties 类来组合完成配置读取
+     * 底层调用的是 JDK 的方法
+     * @param name 类加载器的名字
+     * @param parent 父类加载器
+     * @return 类加载器
+     * @throws Exception 异常
+     */
     private ClassLoader createClassLoader(String name, ClassLoader parent)
         throws Exception {
 
@@ -204,7 +230,7 @@ public final class Bootstrap {
 
     /**
      * System property replacement in the given string.
-     *
+     * 处理配置文件传递过来的 String
      * @param str The original string
      * @return the modified string
      */
@@ -250,19 +276,25 @@ public final class Bootstrap {
 
     /**
      * Initialize daemon.
+     * 初始化函数，
      * @throws Exception Fatal initialization error
      */
     public void init() throws Exception {
 
+        // 初始化三个类加载器
         initClassLoaders();
 
+        // 设置线程上下文加载器
         Thread.currentThread().setContextClassLoader(catalinaLoader);
 
+        // 啥玩意啊
         SecurityClassLoad.securityClassLoad(catalinaLoader);
 
         // Load our startup class and call its process() method
         if (log.isDebugEnabled())
             log.debug("Loading startup class");
+        // 这里就使用类加载器，加载 catalina 这个类
+        // 反射获取类实例
         Class<?> startupClass = catalinaLoader.loadClass("org.apache.catalina.startup.Catalina");
         Object startupInstance = startupClass.getConstructor().newInstance();
 
@@ -270,10 +302,11 @@ public final class Bootstrap {
         if (log.isDebugEnabled())
             log.debug("Setting startup class properties");
         String methodName = "setParentClassLoader";
-        Class<?> paramTypes[] = new Class[1];
+        Class<?>[] paramTypes = new Class[1];
         paramTypes[0] = Class.forName("java.lang.ClassLoader");
-        Object paramValues[] = new Object[1];
+        Object[] paramValues = new Object[1];
         paramValues[0] = sharedLoader;
+        // 设置 catalina 的父类类加载器，catalina 以后加载类应该是使用这个类加载器
         Method method =
             startupInstance.getClass().getMethod(methodName, paramTypes);
         method.invoke(startupInstance, paramValues);
@@ -291,8 +324,8 @@ public final class Bootstrap {
 
         // Call the load() method
         String methodName = "load";
-        Object param[];
-        Class<?> paramTypes[];
+        Object[] param;
+        Class<?>[] paramTypes;
         if (arguments==null || arguments.length==0) {
             paramTypes = null;
             param = null;
@@ -390,8 +423,8 @@ public final class Bootstrap {
     public void stopServer(String[] arguments)
         throws Exception {
 
-        Object param[];
-        Class<?> paramTypes[];
+        Object[] param;
+        Class<?>[] paramTypes;
         if (arguments==null || arguments.length==0) {
             paramTypes = null;
             param = null;
@@ -412,14 +445,16 @@ public final class Bootstrap {
      * Set flag.
      * @param await <code>true</code> if the daemon should block
      * @throws Exception Reflection error
+     *
+     *
      */
     public void setAwait(boolean await)
         throws Exception {
 
-        Class<?> paramTypes[] = new Class[1];
+        Class<?>[] paramTypes = new Class[1];
         paramTypes[0] = Boolean.TYPE;
-        Object paramValues[] = new Object[1];
-        paramValues[0] = Boolean.valueOf(await);
+        Object[] paramValues = new Object[1];
+        paramValues[0] = await;
         Method method =
             catalinaDaemon.getClass().getMethod("setAwait", paramTypes);
         method.invoke(catalinaDaemon, paramValues);
@@ -429,12 +464,11 @@ public final class Bootstrap {
     public boolean getAwait()
         throws Exception
     {
-        Class<?> paramTypes[] = new Class[0];
-        Object paramValues[] = new Object[0];
+        Class<?>[] paramTypes = new Class[0];
+        Object[] paramValues = new Object[0];
         Method method =
             catalinaDaemon.getClass().getMethod("getAwait", paramTypes);
-        Boolean b=(Boolean)method.invoke(catalinaDaemon, paramValues);
-        return b.booleanValue();
+        return (Boolean)method.invoke(catalinaDaemon, paramValues);
     }
 
 
@@ -451,6 +485,10 @@ public final class Bootstrap {
     /**
      * Main method and entry point when starting Tomcat via the provided
      * scripts.
+     *
+     * 启动整个 tomcat 的入口，无论是启动，还是停止，都是这一个方法入口
+     * 只是通过参数 args[] 判断需要执行什么指令
+     * 底层是调用反射机制，去调用 catalina 的一些方法
      *
      * @param args Command line arguments to be processed
      */

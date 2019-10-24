@@ -66,6 +66,10 @@ import org.xml.sax.SAXParseException;
  * <li><b>stop</b>       - Stop the currently running instance of Catalina.</li>
  * </ul>
  *
+ * catalina 这个类是对 bootstrap 的再一次封装，目的是完善一些信息
+ * 比如完全啊，什么配置文件路径啊，什么命令解析，构建server啊，这是最重要的
+ * catalina 调用 digester 去构建一个 server 对象，当然还可以选择构建一个集群
+ *
  * @author Craig R. McClanahan
  * @author Remy Maucherat
  */
@@ -83,17 +87,20 @@ public class Catalina {
 
     /**
      * Use await.
+     * 这个参数有什么用呢？
      */
     protected boolean await = false;
 
     /**
      * Pathname to the server configuration file.
+     * 代码级别写好了配置文件地址
      */
     protected String configFile = "conf/server.xml";
 
     // XXX Should be moved to embedded
     /**
      * The shared extensions class loader for this server.
+     * 应该是 sharedClassLoader
      */
     protected ClassLoader parentClassLoader =
         Catalina.class.getClassLoader();
@@ -101,6 +108,7 @@ public class Catalina {
 
     /**
      * The server component we are starting or stopping.
+     * catalina 的目的就是管理这个 server
      */
     protected Server server = null;
 
@@ -119,6 +127,7 @@ public class Catalina {
 
     /**
      * Is naming enabled ?
+     * 命名是否可用，这有什么用？
      */
     protected boolean useNaming = true;
 
@@ -215,7 +224,7 @@ public class Catalina {
 
     /**
      * Process the specified command line arguments.
-     *
+     * 处理运行时，传递过来的额外的参数
      * @param args Command line arguments to process
      * @return <code>true</code> if we should continue processing
      */
@@ -235,6 +244,7 @@ public class Catalina {
             } else if (args[i].equals("-config")) {
                 isConfig = true;
             } else if (args[i].equals("-nonaming")) {
+                // 是否可以使用命名服务
                 setUseNaming(false);
             } else if (args[i].equals("-help")) {
                 usage();
@@ -257,6 +267,7 @@ public class Catalina {
 
     /**
      * Return a File object representing our configuration file.
+     * 返回配置文件所在文件对象
      * @return the main configuration file
      */
     protected File configFile() {
@@ -272,6 +283,9 @@ public class Catalina {
 
     /**
      * Create and configure the Digester we will be using for startup.
+     *
+     * 返回一个 digester 对象，这个对象将赌气 server.xml 文件，并且根据文件内容构建一个 server
+     * 对象
      * @return the main digester to parse server.xml
      */
     protected Digester createStartDigester() {
@@ -418,6 +432,7 @@ public class Catalina {
 
     /**
      * Cluster support is optional. The JARs may have been removed.
+     * digester 集群扫描支持，可选
      */
     private void addClusterRuleSet(Digester digester, String prefix) {
         Class<?> clazz = null;
@@ -466,6 +481,10 @@ public class Catalina {
         stopServer(null);
     }
 
+    /**
+     * 停止服务，本质上是调用的 serve 的方法
+     * @param arguments 参数
+     */
     public void stopServer(String[] arguments) {
 
         if (arguments != null) {
@@ -527,6 +546,8 @@ public class Catalina {
 
     /**
      * Start a new server instance.
+     * 加载一个新的 server 实例
+     * 通过 digester 读取 server.xml 文件来实现
      */
     public void load() {
 
@@ -537,8 +558,10 @@ public class Catalina {
 
         long t1 = System.nanoTime();
 
+        // 判断临时 temp 目录是不是一个文件目录
         initDirs();
 
+        // 判断是否支持命名服务，并设置一些额外的参数
         // Before digester - it may be needed
         initNaming();
 
@@ -608,6 +631,8 @@ public class Catalina {
             try {
                 inputSource.setByteStream(inputStream);
                 digester.push(this);
+                // 就是这一行函数，构造了 server
+                // 这是一种什么写法？
                 digester.parse(inputSource);
             } catch (SAXParseException spe) {
                 log.warn("Catalina.start using " + getConfigFile() + ": " +
@@ -632,6 +657,7 @@ public class Catalina {
         getServer().setCatalinaBase(Bootstrap.getCatalinaBaseFile());
 
         // Stream redirection
+        // 重新设置了流的对象
         initStreams();
 
         // Start the new server
@@ -718,6 +744,8 @@ public class Catalina {
             }
         }
 
+        // 现在是 catalina 调用 start 方法，在构建的时候， await = true，并且，运行到这一步的时候
+        // Server 已经开始运行了
         if (await) {
             await();
             stop();
@@ -770,6 +798,7 @@ public class Catalina {
 
     /**
      * Await and shutdown.
+     * 这个 flag 是被 server 调用的
      */
     public void await() {
 

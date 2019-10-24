@@ -1,0 +1,35 @@
+源码阅读第一天
+1，BootStrap 类是一个单纯的包含的 Main 主函数的类，实际上 tomcat 就是一个 java application。这个类的主要作用就是
+设置一些环境变量，比如 tomcat 的配置文件的对象等；创建三个类加载器，并设置一个线程上下文类加载器，并使用 catalinaClassloader 去加载
+catalina 这个类文件，然后通过反射调用生成类实例。此外，这个类还可以按照不同的参数，调用不同的 catalina 方法，参数是从 args 里面传递过来的
+
+2，Catalina 类是一个对 Server 的封装，最主要的目的是创建 Server 这个类实例，底层调用的是 Digester 和 InputSource（创建的时候，Server 里面的
+所有子组件将会全部创建，也就是说，service、engine、connector 等，都是这里创建的）。Catalina 也会调用不同的
+Serve 的方法。Catalina 在调用 load 方法之后，会调用所有组件的 init 方法，之后又会调用所有组件的 start 方法，注意，这是串行的，全都是
+执行完 init 方法之后，再执行 start 方法，都是在 bootstrap 下执行。当所有的初始化和开始方法调用完毕之后，这个线程会停留在 serve 这个层面的组件
+上，具体是 await 这个同步方法上，会创建一个 SocketServer 持续监听，如果监听到的信息是 "SHUTDOWN"，则跳出循环，返回到 catalina 这个层面
+的组件上，然后执行 stop 方法，这样就完成了 tomcat 的创建和销毁
+
+3，StandardServe 类是 Serve 的实现类，它在 Catalina 中有具体的引用，这样 Catalina 才能使用 Digester 去读取 server.xml 文件，生成 Server 实例
+StandardServer 类会调用 initInternal 方法，该方法会使用 catalina 的类加载器，这个加载器是 URL加载器，通过这个加载器可以得到需要加载的的文件
+的 URL，然后调用组件去验证这些文件是否合理（自己理解），之后调用 Service.init
+
+4，StandardService 类是 Service 的实现类，在 catalina 创建 Serve 的时候，就已经创建好了，这个类里面主要就是 engine、connector、executor、
+mapper、mapperListener等
+它的主要作用就是维护内部的组件，比如 connector 数组的新增和删除，比如获取父类类记载，这些组件的 init 和 start 等
+
+5，Container 接口
+
+
+
+疑问：
+StringManager 类
+PropertyChangeSupport 类
+
+
+流程：
+Bootstrap.init -> Catalina.newInstance、setParentClassLoader
+Bootstrap.load -> Catalina.load -> Server.init -> StandardServer.initInternal -> Service.init -> StandardService.initInternal ->
+(Engine.init () + Executor.init + Connector.init) ->
+Bootstrap.start -> Catalina.start -> Server.start -> StandardServer.startInternal -> Service.start
+                                                                                                                        -> StandardServer.await
