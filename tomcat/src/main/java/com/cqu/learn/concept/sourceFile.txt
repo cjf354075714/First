@@ -20,6 +20,44 @@ mapper、mapperListener等
 
 5，Container 接口
 
+6，ContainerBase 抽象类，该抽象类有一个重要的方法，该方法启动后台线程，主要用于扫描部署的项目是否内容发生的改变，如果发生了改变
+就触发 periodic_event 事件重新部署或者重新加载项目。
+
+7，StandardEngine 类，该类是容器级别的最高类，一个请求会先经过该类的 valve 然后一直向下转发，host，context等，最终到达 wrapper
+1，调用 ContainerBase 的 background 方法，监视项目资源，可以直接热部署项目，干脆就不用重新启动了
+2，Host 组件是虚拟主机，它下面的组件是 Context 组件，Context 组件代表着一个应用，那么这个应用我们是在什么时候部署的呢，部署的方式是什么呢
+应用的部署方式有：
+服务器启动时部署，具体在 digester 解析 web.xml 文件的时候，就会创建一个 Context 组件
+后台定时加载：应该是某个线程主动加载项目
+管理工具加载：在 tomcat 应用管理界面输入项目的绝对地址启动
+集群部署：
+部署的时候：主要有两种，开发人员主动部署或者后台设置时间部署；启动 tomcat 的时候部署。
+启动服务器时部署，需要我们根据 context 的绝对地址，在 server.xml 文件下的 Host 节点里面创建一个 Context 节点，在 digester 读取 server.xml 的时候
+就能自动创建这个 context，但是这种方式是写入文件的，写死了不好
+还有一种就是直接将项目部署在 webapps 下，HostConfig 会自动读取这些项目完成部署，这就是 HostConfig 的作用
+
+7.1 HostConfig 类
+该类是 StandardHost 类的字段，在 StandardHost 组件更改状态为 start 状态的时候，就触发 HostConfig 类的初始化，并且加载 web 项目
+总结：Context 实例有两次加载的时间，第一次是在 digester 扫描到 <Host><Context path="" docBase= "" reload=""/></Host>，就
+直接生成一个 Context 的实例，这是 digester 生成的。第二次时间点是在 HostConfig 组件扫描 webapps 文件夹下的目录时，HostConfig 创建的
+Context 实例
+
+8，StandardContext 类，该组件用于 web 应用的初始化和启动工作
+web 应用的部署方式有三种：
+Context 描述文件部署：直接在 context.xml 文件里面配置需要加载的项目的地址，但是这个方法我就是没成功
+WEB 项目部署：
+WAR 包部署：这两种没什么区别，主要就是将 context.xml 文件复制到某个地方
+在初始化的过程中，会创建一些类加载器啊什么的，比如这是一个应用，就给没有应用添加一个类加载器，父加载器是 sharedClassLoader
+接着是 ContextConfig 类的加载
+
+9，ContextConfig 类
+该类主要就是完善 StandardContext 的一些功能，比如设置 Context 中那些没有配置的属性，根据 web.xml 创建 Wrapper 类等
+当然 web.xml 也有很多等级，比如容器级、Host 级等
+这些机制都是生命周期实现的
+
+10，StandardWrapper 类
+该类由 ContextConfig 类加载，并且初始化，它主要负责读取 web.xml 文件，并且加载启动时加载的 Servlet。
+之后，才进行 Servlet 的 init 方法执行。
 
 
 疑问：
@@ -33,3 +71,13 @@ Bootstrap.load -> Catalina.load -> Server.init -> StandardServer.initInternal ->
 (Engine.init () + Executor.init + Connector.init) ->
 Bootstrap.start -> Catalina.start -> Server.start -> StandardServer.startInternal -> Service.start
                                                                                                                         -> StandardServer.await
+
+
+
+启动参数详解：
+-Dcatalina.home=tomcat-src/catalina-home
+-Dcatalina.base=tomcat-src/catalina-home
+-Djava.io.tmpdir=tomcat-src/catalina-home/temp
+-Djava.endorsed.dirs=tomcat-src/catalina-home/endorsed
+-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+-Djava.util.logging.config.file=tomcat-src/catalina-home/conf/logging.properties

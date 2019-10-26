@@ -11,9 +11,5 @@ public class DailyTemperatureTest {
     @Test
     public void test() {
     DailyTemperature dailyTemperature = new DailyTemperature();
-        int[] s = dailyTemperature.dailyTemperatures2(null);
-        for (int a : s) {
-            System.err.println(a);
-        }
     }
 }

@@ -53,20 +53,16 @@ import org.apache.juli.logging.LogFactory;
  */
 public final class Bootstrap {
 
+    // 日志打印器
     private static final Log log = LogFactory.getLog(Bootstrap.class);
-
-    /**
-     * Daemon object used by main.
-     * 当前类的类实例
-     */
+    // 当前类的实例
     private static Bootstrap daemon = null;
 
-    /**
-     * catalina 所依赖的文件路径
-     */
+    // Tomcat 依赖的文件，是配置文件和应用项目的文件对象
     private static final File catalinaBaseFile;
     private static final File catalinaHomeFile;
 
+    // zhen
     private static final Pattern PATH_PATTERN = Pattern.compile("(\".*?\")|(([^,])*)");
 
     // 该静态代码块的目的就是在类加载前，拿到项目运行的配置文件和项目文件的绝对路径
