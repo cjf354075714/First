@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--Configuration 代表配置文件的跟节点，status 表示日志的打印等级，意思就是 Log4j2 本身的日志打印等级，一般来说是不需要看的，所以设置为 DEBUG 以上的等级就行-->
+<!--monitorinterval 表示日志框架自动检测配置文件的时间间隔，比如修改了配置文件，过多久才会生效。单位为 s 最小为 5s-->
+<Configuration xmlns="http://logging.apache.org/log4j/2.0/config" status="WARN">
+    <Properties>
+        <Property name="filepath">log4j2.log</Property>
+    </Properties>
+    <!--Appenders 里面配置一个日志信息的去向，这里配置了一个 Console 去向-->
+    <Appenders>
+        <!--Console 表示这是一个控制台日志去向，除了名字这个属性以外，还有 target 表示日志输出的工具-->
+        <Console name="console" target="SYSTEM_OUT">
+            <!--日志输出格式-->
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} %L %M - %msg%n"/>
+        </Console>
+
+        <File name="logFile" fileName="${filepath}" append="true">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} %L %M - %msg%n"/>
+        </File>
+
+    </Appenders>
+    <!--Loggers 与 Appenders 相配合使用，Appenders 指定有哪些日志去向，包括控制台或者文件-->
+    <!--Loggers 指定哪个 Appender 的日志的等级，比如控制台需要拦截 TRACE 等级以上的，文件只需要拦截 WARN 等级以上的-->
+    <Loggers>
+        <!--level 表示等级-->
+        <Root level="TRACE">
+            <!--ref 表示它和谁想关联-->
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="logFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

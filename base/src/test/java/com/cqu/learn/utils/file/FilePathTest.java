@@ -21,4 +21,11 @@ public class FilePathTest {
         System.out.println(file.getCanonicalPath());
         System.out.println(file.getCanonicalFile().getParent());
     }
+
+    @Test
+    public void test1() throws IOException {
+        File file = new File("D:/", "git");
+        System.out.println(file.exists());
+        System.out.println(file.getAbsolutePath());
+    }
 }

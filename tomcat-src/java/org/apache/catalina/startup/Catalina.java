@@ -101,6 +101,8 @@ public class Catalina {
     /**
      * The shared extensions class loader for this server.
      * 应该是 sharedClassLoader
+     * 如果没有修改，就是加载这个类的类加载器，那应该是 catalinaClassloader
+     * 在定义的时候，sharedClassloader 和 catalinaClassloader 没有区别
      */
     protected ClassLoader parentClassLoader =
         Catalina.class.getClassLoader();

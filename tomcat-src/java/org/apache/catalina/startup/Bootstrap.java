@@ -126,13 +126,13 @@ public final class Bootstrap {
     private Object catalinaDaemon = null;
 
     // 公共类加载器
-    ClassLoader commonLoader = null;
+    private ClassLoader commonLoader = null;
 
     // catalina 类加载器（线程上下文类加载器）
-    ClassLoader catalinaLoader = null;
+   private ClassLoader catalinaLoader = null;
 
-    // 分享类加载器，该加载器是 catalina 这个给类的加载器实例
-    ClassLoader sharedLoader = null;
+    // 分享类加载器，该加载器是 catalina 这个类的属性字段
+   private ClassLoader sharedLoader = null;
 
     /**
      * 初始化类加载器，本质上都是 URLClassLoader
@@ -296,7 +296,7 @@ public final class Bootstrap {
 
 
     /**
-     * Load daemon.
+     * 加载函数，bootstrap 调用 catalina 的 load 方法
      */
     private void load(String[] arguments)
         throws Exception {
