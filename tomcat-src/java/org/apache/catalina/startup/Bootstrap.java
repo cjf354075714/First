@@ -36,20 +36,9 @@ import org.apache.juli.logging.LogFactory;
 
 
 /**
- * Bootstrap loader for Catalina.  This application constructs a class loader
- * for use in loading the Catalina internal classes (by accumulating all of the
- * JAR files found in the "server" directory under "catalina.home"), and
- * starts the regular execution of the container.  The purpose of this
- * roundabout approach is to keep the Catalina internal classes (and any
- * other classes they depend on, such as an XML parser) out of the system
- * class path and therefore not visible to application level classes.
- *
- * catalina 的启动加载器，这个应用构造了一个包含加载在 catalina.home 下的 jar 类加载器和一个常规启动器
- * 这样周折的应用是为了保证 catalina 内核文件（和其他依赖文件比如 XML 解析器）不依赖系统类加载器。因此，他们也就对
- * 应用级别的类文件不可见
- * @author Feng
- * @author Craig R. McClanahan
- * @author Remy Maucherat
+ * Tomcat 的启动类，该类是一个典型的 JAVA Application，该类的功能：
+ * 创建 common classloader、catalina classloader 和 shear classloader
+ * 初始化和启动底层各个组件
  */
 public final class Bootstrap {
 
@@ -57,18 +46,16 @@ public final class Bootstrap {
     private static final Log log = LogFactory.getLog(Bootstrap.class);
     // 当前类的实例
     private static Bootstrap daemon = null;
-
     // Tomcat 依赖的文件，是配置文件和应用项目的文件对象
     private static final File catalinaBaseFile;
     private static final File catalinaHomeFile;
-
-    // zhen
+    // 正则表达式
     private static final Pattern PATH_PATTERN = Pattern.compile("(\".*?\")|(([^,])*)");
 
     // 该静态代码块的目的就是在类加载前，拿到项目运行的配置文件和项目文件的绝对路径
     static {
         // Will always be non-null
-        // 获取当前的工作区，也就是这个项目的工作区
+        // 获取当前的目录，该目录就是 JAVA Application 的运行目录
         String userDir = System.getProperty("user.dir");
 
         // Home first
@@ -80,6 +67,7 @@ public final class Bootstrap {
             File f = new File(home);
             try {
                 // 获取一个文件对象在计算机上的绝对定位
+                // 就是配置文件的 JAVA 对象
                 homeFile = f.getCanonicalFile();
             } catch (IOException ioe) {
                 homeFile = f.getAbsoluteFile();
@@ -132,15 +120,10 @@ public final class Bootstrap {
                 Globals.CATALINA_BASE_PROP, catalinaBaseFile.getPath());
     }
 
-    // -------------------------------------------------------------- Variables
-
-
     /**
-     * Daemon reference.
      * catalina 对象的引用，最终是调用反射获取的类实例
      */
     private Object catalinaDaemon = null;
-
 
     // 公共类加载器
     ClassLoader commonLoader = null;
@@ -148,17 +131,17 @@ public final class Bootstrap {
     // catalina 类加载器（线程上下文类加载器）
     ClassLoader catalinaLoader = null;
 
-    // 分享类加载器
+    // 分享类加载器，该加载器是 catalina 这个给类的加载器实例
     ClassLoader sharedLoader = null;
 
     /**
      * 初始化类加载器，本质上都是 URLClassLoader
+     * 类加载器加载的是 catalina.home/lib 下的 jar 文件
      */
     private void initClassLoaders() {
         try {
             commonLoader = createClassLoader("common", null);
             if( commonLoader == null ) {
-                // no config file, default to this loader - we might be in a 'single' env.
                 commonLoader=this.getClass().getClassLoader();
             }
             catalinaLoader = createClassLoader("server", commonLoader);
