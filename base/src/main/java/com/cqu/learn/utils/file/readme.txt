@@ -7,6 +7,7 @@ File 的详细方法
 File 构造函数
 File(String parent, String child);
 通过给定的父抽象路径和子路径创建一个新的 File 实例，就是给定父路径和子路径，然后创建一个 File 对象
+如果 child = ".."，就表示获取的是当前文件夹的上一个文件夹
 
 getName -> 返回文件对象的名字
 getPath -> 返回文件对象的路径，我们创建这个对象是什么路径，就返回什么路径
