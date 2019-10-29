@@ -33,7 +33,7 @@ JUL 的使用：
 JUL 是 java.utils.Logger 类的简称，是 jdk 自带的日志工具，使用 Logger.getLogger("loggerName") 方法获取，loggerName 表示日志类的名字
 JUL 包含三个模块：level、formatter 和 handler
 level 等级如下：
-OFF/SEVERE/WARN/INFO/CONFIG/FINE/FINERG/FINEST/ALL
+OFF/SEVERE/ERROR/WARN/INFO/CONFIG/FINE/FINERG/FINEST/ALL
 这些等级是 level 类的实现，该类有三个字段，表示等级的字符串对象、表示大小的整形对象，表示处理接口的实例
 
 formatter 表示输出的格式，现有 SimpleFormatter 和 XMLFormatter
