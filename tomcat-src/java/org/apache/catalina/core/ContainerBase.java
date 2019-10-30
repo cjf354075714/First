@@ -908,16 +908,18 @@ public abstract class ContainerBase extends LifecycleMBeanBase
         // Start our subordinate components, if any
         logger = null;
         getLogger();
+        // StandardHost 启动时，调用 super.startInternal 先启动集群 cluster
         Cluster cluster = getClusterInternal();
         if (cluster instanceof Lifecycle) {
             ((Lifecycle) cluster).start();
         }
+        // StandardHost 启动时，调用 super.startInternal 再启动 realm
         Realm realm = getRealmInternal();
         if (realm instanceof Lifecycle) {
             ((Lifecycle) realm).start();
         }
 
-        // Start our child containers, if any
+        // 启动 StandardContext
         Container children[] = findChildren();
         List<Future<Void>> results = new ArrayList<>();
         for (int i = 0; i < children.length; i++) {
@@ -948,10 +950,10 @@ public abstract class ContainerBase extends LifecycleMBeanBase
             ((Lifecycle) pipeline).start();
         }
 
-
+        // 触发开始事件监听器
         setState(LifecycleState.STARTING);
 
-        // Start our thread
+        // 开始守护线程，守护子组件
         threadStart();
     }
 

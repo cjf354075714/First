@@ -44,7 +44,7 @@ Context 实例
 
 8，StandardContext 类，该组件用于 web 应用的初始化和启动工作
 web 应用的部署方式有三种：
-Context 描述文件部署：直接在 context.xml 文件里面配置需要加载的项目的地址，但是这个方法我就是没成功
+Context 描述文件部署：直接在 context.xml 文件里面配置需要加载的项目的地址
 WEB 项目部署：
 WAR 包部署：这两种没什么区别，主要就是将 context.xml 文件复制到某个地方
 在初始化的过程中，会创建一些类加载器啊什么的，比如这是一个应用，就给没有应用添加一个类加载器，父加载器是 sharedClassLoader
@@ -65,12 +65,13 @@ StringManager 类
 PropertyChangeSupport 类
 
 
-流程：
-Bootstrap.init -> Catalina.newInstance、setParentClassLoader
-Bootstrap.load -> Catalina.load -> Server.init -> StandardServer.initInternal -> Service.init -> StandardService.initInternal ->
-(Engine.init () + Executor.init + Connector.init) ->
-Bootstrap.start -> Catalina.start -> Server.start -> StandardServer.startInternal -> Service.start
-                                                                                                                        -> StandardServer.await
+启动流程：
+1，Bootstrap.init -> Catalina.newInstance、setParentClassLoader（这个过程是启动的第一步：创建三个类加载器、设置配置文件，jar 文件加载目录、创建 catalina 类实例、给
+catalina 类设置 sharedClassloader 加载器。中间有很多关于路径的处理和 URLClassloader 的创建（我需要做到给定目录创建 URLClassloader 并加载 jar 文件））
+2，Bootstrap.load -> Catalina.load{digester 解析 server.xml 并创建一个 server 的实例} -> Server.init -> LifeCycle.init -> LifeCycleBase.init(){这里触发各个生命周期监听事件} ->
+StandardServer.initInternal(){验证 jar 文件} -> Service.init -> Engine.init{getRealm} + Executor.init + Connector.init -> ProtocolHandler.init
+3，bootstrap.start -> catalina.start -> Server.start -> Service.start -> Engine.start -> Executor.start -> Connector.start -> ProtocolHandler.start
+
 
 
 
@@ -81,3 +82,19 @@ Bootstrap.start -> Catalina.start -> Server.start -> StandardServer.startInterna
 -Djava.endorsed.dirs=tomcat-src/catalina-home/endorsed
 -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
 -Djava.util.logging.config.file=tomcat-src/catalina-home/conf/logging.properties
+
+阅读体会第一天：实在是太难了
+BootStrap -> Catalina -> Server -> Service -> Engine + Connector ->
+Host(StandardHost + HostConfig) -> Context(StandardContext + HostContext) -> Wrapper
+
+Host、Context、Wrapper 都有同一个父类，ContainerBase，这三个之间的关系是引用关系
+现在只讨论 Host 以下的初始化和开始，初始化只是给一些字段属性进行赋值，比如
+Host 有一个线程池，该线程池只有一个线程，用于 HostConfig 加载 Context。
+开始过程：StandardHost.startInternal -> ContainerBase.startInternal -> {cluster.start、realm.start、
+children.start{就是这个函数，才能够使得 Host 初始化 Context，Context 初始化 Wrapper}}
+Host 在 Server 加载的时候，就已经加载了 Context，并且该 Context 在 Host 中已经开始了
+当然，在 Host start 的时候，会调用自己父类的 start ，该父类有一个 List 的监听器，该监听器会在 start 方法中被触发
+然后，这个父类的监听器会调用 HostConfig(该对象在 Catalina 中的方法给 Host 添加上引用) 的 start 方法，这个类就可以加载 context.xml 文件、WEB文件夹、WAR压缩文件夹
+三种方法去部署 WEB 应用，这个部署的过程就是使用 Host 的线程池，按照项目文件的路径，去创建 Context 对象，并且会在背景
+线程中，监听这些路径的改变状态，通过文件的时间戳是否改变来实现。如果改变了就重新装载 Context 对象，这个对象就代表了一个
+WEB 应用对象。至于这个 WEB 应用是如何工作的，后面再看吧。

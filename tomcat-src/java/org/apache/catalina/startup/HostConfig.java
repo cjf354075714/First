@@ -417,14 +417,19 @@ public class HostConfig implements LifecycleListener {
      */
     protected void deployApps() {
 
+        // appBase = tomcat/webapp
+        // WEB 文件夹部署和 WAR 文件部署
         File appBase = host.getAppBaseFile();
+        // Context 描述文件部署方式，需要先加载某个目录下的所有 context.xml 文件
+        // 该文件夹通过 Host 的 xmlBase 指定，默认是 $CATALINA_BASE/conf/EngineName/HostName
         File configBase = host.getConfigBaseFile();
+        // 获取 webapp 下的所有可部署的文件夹
         String[] filteredAppPaths = filterAppPaths(appBase.list());
-        // Deploy XML descriptors from configBase
+        // 按照 Context.xml 配置文件部署
         deployDescriptors(configBase, configBase.list());
-        // Deploy WARs
+        // WAR 方式部署
         deployWARs(appBase, filteredAppPaths);
-        // Deploy expanded folders
+        // 文件夹部署
         deployDirectories(appBase, filteredAppPaths);
 
     }
@@ -500,16 +505,18 @@ public class HostConfig implements LifecycleListener {
 
 
     /**
-     * Deploy XML context descriptors.
-     * @param configBase The config base
-     * @param files The XML descriptors which should be deployed
+     * Context.xml 方式部署的文件解析函数
+     * @param configBase Context.xml 文件可以有很多个，但是存在的目录只能有一个，有默认值，也可以通过
+     *                   Host xmlBase = "path" 配置，这个configBase 就是该目录
+     * @param files Context.xml 可以有很多个，它们所在的数组
      */
     protected void deployDescriptors(File configBase, String[] files) {
 
         if (files == null)
             return;
-
+        // 线程池，该线程池在 Host 创建的时候创建，线程池含量就只有一个线程
         ExecutorService es = host.getStartStopExecutor();
+        // 定义多线程的执行结果
         List<Future<?>> results = new ArrayList<>();
 
         for (int i = 0; i < files.length; i++) {
@@ -538,7 +545,7 @@ public class HostConfig implements LifecycleListener {
 
 
     /**
-     * Deploy specified context descriptor.
+     * 多线程调用该函数，用于解析 Context.xml
      * @param cn The context name
      * @param contextXml The descriptor
      */
@@ -564,6 +571,7 @@ public class HostConfig implements LifecycleListener {
         try (FileInputStream fis = new FileInputStream(contextXml)) {
             synchronized (digesterLock) {
                 try {
+                    // digester 解析 Context.xml
                     context = (Context) digester.parse(fis);
                 } catch (Exception e) {
                     log.error(sm.getString(
@@ -610,7 +618,8 @@ public class HostConfig implements LifecycleListener {
                     context.setDocBase(null);
                 }
             }
-
+            // 将 Context 添加到 host 中
+            // 并且会直接启动 Context
             host.addChild(context);
         } catch (Throwable t) {
             ExceptionUtils.handleThrowable(t);
@@ -636,7 +645,7 @@ public class HostConfig implements LifecycleListener {
                 unpackWAR = ((StandardContext) context).getUnpackWAR();
             }
 
-            // Add the eventual unpacked WAR and all the resources which will be
+            // 将该项目的目录、web.xml 添加到守护资源
             // watched inside it
             if (isExternalWar) {
                 if (unpackWAR) {

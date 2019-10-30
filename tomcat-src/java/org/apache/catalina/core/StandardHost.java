@@ -227,10 +227,12 @@ public class StandardHost extends ContainerBase implements Host {
         if (appBaseFile != null) {
             return appBaseFile;
         }
-
+        // getAppBase() = webapp
         File file = new File(getAppBase());
 
         // If not absolute, make it absolute
+        // 肯定不是绝对路径
+        // getCatalinaBase() = tomcat所在的绝对路径
         if (!file.isAbsolute()) {
             file = new File(getCatalinaBase(), file.getPath());
         }
@@ -829,6 +831,7 @@ public class StandardHost extends ContainerBase implements Host {
                 if(!found) {
                     Valve valve =
                         (Valve) Class.forName(errorValve).getConstructor().newInstance();
+                    // 添加 ErrorReportValve 错误管道阀到责任链上面去
                     getPipeline().addValve(valve);
                 }
             } catch (Throwable t) {
