@@ -4957,6 +4957,7 @@ public class StandardContext extends ContainerBase
             resourcesStart();
         }
 
+        // 创建 web 应用类加载器，该加载器的实例就是 server 的类加载器，源头就是 catalinaLoader
         if (getLoader() == null) {
             WebappLoader webappLoader = new WebappLoader(getParentClassLoader());
             webappLoader.setDelegate(getDelegate());
@@ -5068,9 +5069,11 @@ public class StandardContext extends ContainerBase
                 }
 
                 // Notify our interested LifecycleListeners
+                // 触发周期事件，使得 ContextConfig 能够加载
                 fireLifecycleEvent(Lifecycle.CONFIGURE_START_EVENT, null);
 
                 // Start our child containers, if not already started
+                // 开始 wrapper
                 for (Container child : findChildren()) {
                     if (!child.getState().isAvailable()) {
                         child.start();
