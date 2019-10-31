@@ -305,6 +305,7 @@ public class HostConfig implements LifecycleListener {
         } else if (event.getType().equals(Lifecycle.BEFORE_START_EVENT)) {
             beforeStart();
         } else if (event.getType().equals(Lifecycle.START_EVENT)) {
+            // 就是在这里，触发了调用事件
             start();
         } else if (event.getType().equals(Lifecycle.STOP_EVENT)) {
             stop();
@@ -515,19 +516,23 @@ public class HostConfig implements LifecycleListener {
         if (files == null)
             return;
         // 线程池，该线程池在 Host 创建的时候创建，线程池含量就只有一个线程
+        // 该线程池每个 Container 类实例都有，是用于管理自己子容器生命周期而存在的
         ExecutorService es = host.getStartStopExecutor();
         // 定义多线程的执行结果
         List<Future<?>> results = new ArrayList<>();
 
         for (int i = 0; i < files.length; i++) {
+            // 获得该 Context.xml 的配置
             File contextXml = new File(configBase, files[i]);
-
+            // 如果是一个以 xml 结尾的文件，这就是简单的过滤
             if (files[i].toLowerCase(Locale.ENGLISH).endsWith(".xml")) {
+                // 创建一个 context 命名规则对象
                 ContextName cn = new ContextName(files[i], true);
 
+                // 避免和 tomcat 管理工具维护的 context 冲突
                 if (isServiced(cn.getName()) || deploymentExists(cn.getName()))
                     continue;
-
+                // 启用多线程实现 context 对象的创建，也就是项目的部署
                 results.add(
                         es.submit(new DeployDescriptor(this, cn, contextXml)));
             }
@@ -556,22 +561,25 @@ public class HostConfig implements LifecycleListener {
                 new DeployedApplication(cn.getName(), true);
 
         long startTime = 0;
-        // Assume this is a configuration descriptor and deploy it
+        // 输出，这是一个 context.xml 文件部署的方式去部署一个项目
         if(log.isInfoEnabled()) {
            startTime = System.currentTimeMillis();
            log.info(sm.getString("hostConfig.deployDescriptor",
                     contextXml.getAbsolutePath()));
         }
 
+        // 需要创建的 context 对象
         Context context = null;
         boolean isExternalWar = false;
         boolean isExternal = false;
         File expandedDocBase = null;
 
+        // contextXml 就代表着 context.xml 文件
         try (FileInputStream fis = new FileInputStream(contextXml)) {
             synchronized (digesterLock) {
                 try {
                     // digester 解析 Context.xml
+                    // 此时就会解析到 docBase 这个目录，这个目录就是我们设置的 web 应用的根目录
                     context = (Context) digester.parse(fis);
                 } catch (Exception e) {
                     log.error(sm.getString(
@@ -585,29 +593,42 @@ public class HostConfig implements LifecycleListener {
                 }
             }
 
+            // 这里调用的是当前类加载器加载监听器
             Class<?> clazz = Class.forName(host.getConfigClass());
             LifecycleListener listener = (LifecycleListener) clazz.getConstructor().newInstance();
+            // 添加一个监听器 org.apache.catalina.startup.ContextConfig
             context.addLifecycleListener(listener);
 
+            // 配置 context 的 context.xml 文件路径
             context.setConfigFile(contextXml.toURI().toURL());
+            // 配置他的名字
             context.setName(cn.getName());
+            // 配置他的路径
             context.setPath(cn.getPath());
+            // 配置web应用版本
             context.setWebappVersion(cn.getVersion());
             // Add the associated docBase to the redeployed list if it's a WAR
             if (context.getDocBase() != null) {
+                // 这里就根据配置的项目的根目录去获取项目的 File 对象
                 File docBase = new File(context.getDocBase());
                 if (!docBase.isAbsolute()) {
+                    // 如果是一个相对路径，那就使用 webapp 作为他的父路径
                     docBase = new File(host.getAppBaseFile(), context.getDocBase());
                 }
                 // If external docBase, register .xml as redeploy first
+                // web 项目可以部署在外面，就是不部署在webapp，通过 context.xml 指定的绝对路径
                 if (!docBase.getCanonicalPath().startsWith(
                         host.getAppBaseFile().getAbsolutePath() + File.separator)) {
+                    // 标志它为一个额外的部署项目，就是不在 webapp 下的项目
                     isExternal = true;
+                    // 记录下 context.xml 文件的路径和最后访问时间，当这个文件内容改变，会修改这个时间
                     deployedApp.redeployResources.put(
                             contextXml.getAbsolutePath(),
                             Long.valueOf(contextXml.lastModified()));
+                    // 记录下 web 应用所在的绝对路径，和最后修改实现
                     deployedApp.redeployResources.put(docBase.getAbsolutePath(),
                             Long.valueOf(docBase.lastModified()));
+                    // 如果他是一个 war 包，标记一下
                     if (docBase.getAbsolutePath().toLowerCase(Locale.ENGLISH).endsWith(".war")) {
                         isExternalWar = true;
                     }
@@ -619,7 +640,7 @@ public class HostConfig implements LifecycleListener {
                 }
             }
             // 将 Context 添加到 host 中
-            // 并且会直接启动 Context
+            // 并且会直接启动 Context，这就是 context 的内容了
             host.addChild(context);
         } catch (Throwable t) {
             ExceptionUtils.handleThrowable(t);
@@ -1573,6 +1594,7 @@ public class HostConfig implements LifecycleListener {
             host.setAutoDeploy(false);
         }
 
+        // 调用部署项目的函数
         if (host.getDeployOnStartup())
             deployApps();
 
@@ -1760,8 +1782,7 @@ public class HostConfig implements LifecycleListener {
 
 
     /**
-     * This class represents the state of a deployed application, as well as
-     * the monitored resources.
+     * 表示已经部署的应用状态和受监视的资源
      */
     protected static class DeployedApplication {
         public DeployedApplication(String name, boolean hasDescriptor) {
@@ -1778,6 +1799,8 @@ public class HostConfig implements LifecycleListener {
         /**
          * Does this application have a context.xml descriptor file on the
          * host's configBase?
+         *
+         * 应用是否有一个 context.xml 在 host 节点上的 configBase 上配置的路径
          */
         public final boolean hasDescriptor;
 
@@ -1787,6 +1810,11 @@ public class HostConfig implements LifecycleListener {
          * removed, the application will be undeployed. Typically, this will
          * contain resources like the context.xml file, a compressed WAR path.
          * The value is the last modification time.
+         *
+         * context.xml、war 文件的路径和他们修改的最后时间，任何资源的修改都将导致应用重新部署
+         * 资源删除后，会导致应用取消部署
+         *
+         * 键是文件的路径，值是最后修改时间
          */
         public final LinkedHashMap<String, Long> redeployResources =
                 new LinkedHashMap<>();
@@ -1797,6 +1825,10 @@ public class HostConfig implements LifecycleListener {
          * such as the web.xml of a webapp, but can be configured to contain
          * additional descriptors.
          * The value is the last modification time.
+         *
+         * 重新加载的依据，任何修改配置文件的操作都会导致应用重新加载
+         * 主要是包括 web.xml 文件的监控
+         * 键是文件路径，值是文件最后修改时间
          */
         public final HashMap<String, Long> reloadResources = new HashMap<>();
 

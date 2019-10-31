@@ -21,6 +21,8 @@ import java.util.Locale;
 /**
  * Utility class to manage context names so there is one place where the
  * conversions between baseName, path and version take place.
+ *
+ * 一个用于管理 context 文件的类，主要是可以替换 baseName、path 和 version
  */
 public final class ContextName {
     public static final String ROOT_NAME = "ROOT";

@@ -841,6 +841,7 @@ public class StandardHost extends ContainerBase implements Host {
                         errorValve), t);
             }
         }
+        // 表面上只创建了一个 valve，就完了，其实没有，还调用了父类（表面上是父类，其实是自己的方法）
         super.startInternal();
     }
 

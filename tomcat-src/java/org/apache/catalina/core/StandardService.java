@@ -88,6 +88,7 @@ public class StandardService extends LifecycleMBeanBase implements Service {
 
     /**
      * Service 里面的重要组件 Executor，是线程池的重要部分
+     * 该对象，由 xml 文件配置，并由 digester 生成
      */
     protected final ArrayList<Executor> executors = new ArrayList<>();
 
@@ -538,6 +539,7 @@ public class StandardService extends LifecycleMBeanBase implements Service {
         super.initInternal();
 
         if (engine != null) {
+            // 就是在这里，触发他自己的生命周期监听器
             engine.init();
         }
 

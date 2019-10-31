@@ -19,11 +19,7 @@ package org.apache.catalina.util;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleEvent;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.LifecycleState;
+import org.apache.catalina.*;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.ExceptionUtils;
@@ -119,6 +115,7 @@ public abstract class LifecycleBase implements Lifecycle {
      */
     protected void fireLifecycleEvent(String type, Object data) {
         LifecycleEvent event = new LifecycleEvent(this, type, data);
+        // 这里的监听器就是 HostConfig 这种实现了 LifecycleEvent 的对象
         for (LifecycleListener listener : lifecycleListeners) {
             listener.lifecycleEvent(event);
         }
@@ -405,6 +402,7 @@ public abstract class LifecycleBase implements Lifecycle {
             // startInternal() permits STARTING_PREP to STARTING
             // stopInternal() permits STOPPING_PREP to STOPPING and FAILED to
             // STOPPING
+            // 限制事件的顺序，不能还没开始就结束事件
             if (!(state == LifecycleState.FAILED ||
                     (this.state == LifecycleState.STARTING_PREP &&
                             state == LifecycleState.STARTING) ||
@@ -420,6 +418,7 @@ public abstract class LifecycleBase implements Lifecycle {
         this.state = state;
         String lifecycleEvent = state.getLifecycleEvent();
         if (lifecycleEvent != null) {
+            // 以 Host 的视角来看，就是触发了自己的监听器的开始事件
             fireLifecycleEvent(lifecycleEvent, data);
         }
     }

@@ -271,6 +271,7 @@ public class StandardContext extends ContainerBase
 
     /**
      * The URL of the XML descriptor for this context.
+     * context.xml 的配置文件路径
      */
     private URL configFile = null;
 
@@ -305,6 +306,7 @@ public class StandardContext extends ContainerBase
 
     /**
      * Should we attempt to use cookies for session id communication?
+     *
      */
     private boolean cookies = true;
 
@@ -324,6 +326,7 @@ public class StandardContext extends ContainerBase
 
     /**
      * Unencoded path for this web application.
+     * 浏览器地址栏的应用访问相对地址
      */
     private String path = null;
 
@@ -364,6 +367,7 @@ public class StandardContext extends ContainerBase
 
     /**
      * The document root for this web application.
+     * web 应用项目的地址，在主机上的绝对地址，或者是相对于webapp 的相对地址
      */
     private String docBase = null;
 
@@ -529,6 +533,7 @@ public class StandardContext extends ContainerBase
     /**
      * The servlet mappings for this web application, keyed by
      * matching pattern.
+     * servlet 映射表
      */
     private HashMap<String, String> servletMappings = new HashMap<>();
 
@@ -569,6 +574,7 @@ public class StandardContext extends ContainerBase
 
     /**
      * The welcome files for this application.
+     * 首页
      */
     private String welcomeFiles[] = new String[0];
 
@@ -4911,6 +4917,7 @@ public class StandardContext extends ContainerBase
     @Override
     protected synchronized void startInternal() throws LifecycleException {
 
+        // 发布正在启动的 JMX 通知
         if(log.isDebugEnabled())
             log.debug("Starting " + getBaseName());
 
@@ -4926,6 +4933,7 @@ public class StandardContext extends ContainerBase
 
         // Currently this is effectively a NO-OP but needs to be called to
         // ensure the NamingResources follows the correct lifecycle
+        // 启动当前维护的 JNDI 资源
         if (namingResources != null) {
             namingResources.start();
         }

@@ -276,6 +276,11 @@ public abstract class ContainerBase extends LifecycleMBeanBase
      * children associated with this container.
      */
     private int startStopThreads = 1;
+
+    /**
+     * 该线程池中的线程就是用来加载当前这个类的子对象的一些时间，比如开始停止等，比如，HostConfig 就调用 Host 的
+     * 线程池去初始化和加载 Context
+     */
     protected ThreadPoolExecutor startStopExecutor;
 
 
@@ -919,7 +924,9 @@ public abstract class ContainerBase extends LifecycleMBeanBase
             ((Lifecycle) realm).start();
         }
 
+        // 以 Host 的眼光去看，调用的是自己的 start 方法，那么多线程调用的就是 context 的 start 方法
         // 启动 StandardContext
+        //
         Container children[] = findChildren();
         List<Future<Void>> results = new ArrayList<>();
         for (int i = 0; i < children.length; i++) {
@@ -951,6 +958,7 @@ public abstract class ContainerBase extends LifecycleMBeanBase
         }
 
         // 触发开始事件监听器
+        // 设置事件为开始事件
         setState(LifecycleState.STARTING);
 
         // 开始守护线程，守护子组件
