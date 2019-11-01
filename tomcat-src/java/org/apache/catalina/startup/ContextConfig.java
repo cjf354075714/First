@@ -569,11 +569,14 @@ public class ContextConfig implements LifecycleListener {
     protected void fixDocBase() throws IOException {
 
         Host host = (Host) context.getParent();
+        // appBase = webapp
         File appBase = host.getAppBaseFile();
-
+        // 获取 context docBase="" 指向的绝对路径
         String docBase = context.getDocBase();
+        // 如果没有配置
         if (docBase == null) {
             // Trying to guess the docBase according to the path
+            // 如果没有配置的话，就直接使用浏览器地址栏的相对地址，就默认是访问地址为文件名
             String path = context.getPath();
             if (path == null) {
                 return;
@@ -660,7 +663,7 @@ public class ContextConfig implements LifecycleListener {
         } else {
             docBase = docBase.replace(File.separatorChar, '/');
         }
-
+        // 设置好绝对目录
         context.setDocBase(docBase);
     }
 
@@ -767,6 +770,7 @@ public class ContextConfig implements LifecycleListener {
                     Boolean.valueOf(context.getXmlNamespaceAware())));
         }
 
+        // 初始化 web 容器
         webConfig();
         context.addServletContainerInitializer(new JasperInitializer(), null);
 
@@ -1759,6 +1763,7 @@ public class ContextConfig implements LifecycleListener {
     /**
      * Identify the application web.xml to be used and obtain an input source
      * for it.
+     * 找到 web 应用中的 web.xml 文件，并用 InputSource 标记它
      * @return an input source to the context web.xml
      */
     protected InputSource getContextWebXmlSource() {

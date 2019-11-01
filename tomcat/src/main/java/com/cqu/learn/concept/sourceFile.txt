@@ -98,3 +98,17 @@ Host 在 Server 加载的时候，就已经加载了 Context，并且该 Context
 三种方法去部署 WEB 应用，这个部署的过程就是使用 Host 的线程池，按照项目文件的路径，去创建 Context 对象，并且会在背景
 线程中，监听这些路径的改变状态，通过文件的时间戳是否改变来实现。如果改变了就重新装载 Context 对象，这个对象就代表了一个
 WEB 应用对象。至于这个 WEB 应用是如何工作的，后面再看吧。
+
+StandardHost：该类由 Host 初始化，调用它的开始方法，这个类的主要作用就是启动 Realm 和 Cluster，并且启动自己的 Context
+这个 Context 的 context 配置已经写在了 Host 节点之中。在 StandardHost start 的时候，会触发自己的生命周期时间，HostConfig 是 Lifecycyle 的实现类
+这个类的主要作用就是加载那些没有将 context.xml 写在 server.xml 中的项目：单独写在 conf 下和没有写。该类实现了通过读取 context.xml 文件创建 Context
+类实例，并且监控项目的资源文件的变动情况。然后将该 context 对象添加到 host 中，并调用 context.start 方法，创建 wrapper filter 等。
+关键就是这个 Context 和 ContextConfig
+
+StandardContext：在 digester 解析 server.xml 文件的时候，完成创建或者 由 HostConfig 读取 context.xml 文件创建并添加到 Host 中
+StandardContext.start：该方法实在是太多了，比如开始 JNDI 资源，这些 JNDI 也是 lifecycle 接口，创建 webappclassloader 该加载器是当前线程的
+类加载器，（应该是ApplicationClassloader？），调用 Wrapper 的 start 方法、触发生命周期时间，就能够使得 ContextConfig 类的开始加载
+
+ContextConfig：在 digester 创建 context 时，判断谁才是合适的 context.xml 文件。并且，在 context.start 方法时，会调用一个周期时间，启动
+ContextConfig.fixDocBase 方法，用于规范化目录问题，主要就是为了 war 文件部署，就是将 war 文件解压到合适的目录下
+在 StandardContext.start 方法中，会触发一个 CONFIGURE_START_EVENT 事件，该事件就是调用 ContextConfig 去完成 Wrapper、Filter、Listener 的加载
