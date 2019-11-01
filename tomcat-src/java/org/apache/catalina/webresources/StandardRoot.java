@@ -59,6 +59,8 @@ import org.apache.tomcat.util.res.StringManager;
  * org.apache.catalina.WebResourceRoot.ResourceSetType, String, String, String,
  * String)} represents the absolute path to a file.
  * </p>
+ *
+ * 标准的项目资源接口实现，该类由 digester 创建
  */
 public class StandardRoot extends LifecycleMBeanBase implements WebResourceRoot {
 
@@ -699,6 +701,10 @@ public class StandardRoot extends LifecycleMBeanBase implements WebResourceRoot 
         TomcatURLStreamHandlerFactory.register();
     }
 
+    /**
+     * 生命周期函数
+     * @throws LifecycleException
+     */
     @Override
     protected void startInternal() throws LifecycleException {
         mainResources.clear();
@@ -729,7 +735,12 @@ public class StandardRoot extends LifecycleMBeanBase implements WebResourceRoot 
         setState(LifecycleState.STARTING);
     }
 
+    /**
+     * 就是该方法，调用 context 的参数，去构建文件对象
+     * @return
+     */
     protected WebResourceSet createMainResourceSet() {
+
         String docBase = context.getDocBase();
 
         WebResourceSet mainResourceSet;
@@ -740,6 +751,7 @@ public class StandardRoot extends LifecycleMBeanBase implements WebResourceRoot 
             if (!f.isAbsolute()) {
                 f = new File(((Host)context.getParent()).getAppBaseFile(), f.getPath());
             }
+            // 根据文件对象获取 mainResourceSet
             if (f.isDirectory()) {
                 mainResourceSet = new DirResourceSet(this, "/", f.getAbsolutePath(), "/");
             } else if(f.isFile() && docBase.endsWith(".war")) {

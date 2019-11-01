@@ -54,6 +54,8 @@ import org.apache.tomcat.util.security.Escape;
  * The digester checks for structural correctness (eg single login-config)
  * This class checks for invalid duplicates (eg filter/servlet names)
  * StandardContext will check validity of values (eg URL formats etc)
+ *
+ * 代表着 web.xml 的对象
  */
 @SuppressWarnings("deprecation")
 public class WebXml extends XmlEncodingBase implements DocumentProperties.Encoding,

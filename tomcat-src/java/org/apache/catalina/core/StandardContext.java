@@ -4939,6 +4939,7 @@ public class StandardContext extends ContainerBase
         }
 
         // Post work directory
+        // 设置 work 的工作目录，该目录就是将jsp文件解析成java文件和class文件所在的目录
         postWorkDirectory();
 
         // Add missing components as necessary
@@ -4954,6 +4955,7 @@ public class StandardContext extends ContainerBase
             }
         }
         if (ok) {
+            // 开始资源文件
             resourcesStart();
         }
 
@@ -4965,11 +4967,13 @@ public class StandardContext extends ContainerBase
         }
 
         // An explicit cookie processor hasn't been specified; use the default
+        // 设置默认 Cookie 处理器
         if (cookieProcessor == null) {
             cookieProcessor = new Rfc6265CookieProcessor();
         }
 
         // Initialize character set mapper
+        // 初始化字符映射器
         getCharsetMapper();
 
         // Validate required extensions
@@ -5172,6 +5176,7 @@ public class StandardContext extends ContainerBase
             }
 
             // Configure and call application event listeners
+            // 加载 web 应用事件监听器
             if (ok) {
                 if (!listenerStart()) {
                     log.error(sm.getString("standardContext.listenerFail"));
@@ -5186,6 +5191,7 @@ public class StandardContext extends ContainerBase
                 checkConstraintsForUncoveredMethods(findConstraints());
             }
 
+            // 会话管理器
             try {
                 // Start manager
                 Manager manager = getManager();
@@ -5198,6 +5204,7 @@ public class StandardContext extends ContainerBase
             }
 
             // Configure and call application filters
+            // 实例化 FilterConfig
             if (ok) {
                 if (!filterStart()) {
                     log.error(sm.getString("standardContext.filterFail"));
@@ -5206,6 +5213,7 @@ public class StandardContext extends ContainerBase
             }
 
             // Load and initialize all "load on startup" servlets
+            // 加载和初始化load on startup 的servlet
             if (ok) {
                 if (!loadOnStartup(findChildren())){
                     log.error(sm.getString("standardContext.servletFail"));
@@ -5214,6 +5222,7 @@ public class StandardContext extends ContainerBase
             }
 
             // Start ContainerBackgroundProcessor thread
+            // 该线程还是用来监控项目是否发生改变
             super.threadStart();
         } finally {
             // Unbinding thread
@@ -6035,6 +6044,7 @@ public class StandardContext extends ContainerBase
 
     /**
      * Set the appropriate context attribute for our work directory.
+     * 为工作目录设置上下文属性
      */
     private void postWorkDirectory() {
 

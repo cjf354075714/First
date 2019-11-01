@@ -1148,6 +1148,7 @@ public class HostConfig implements LifecycleListener {
             LifecycleListener listener = (LifecycleListener) clazz.getConstructor().newInstance();
             context.addLifecycleListener(listener);
 
+            // 除了设置这四个参数以外，还会设置 context 节点的其他参数
             context.setName(cn.getName());
             context.setPath(cn.getPath());
             context.setWebappVersion(cn.getVersion());

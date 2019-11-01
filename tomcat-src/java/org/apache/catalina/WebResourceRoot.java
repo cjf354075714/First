@@ -82,6 +82,10 @@ import java.util.Set;
  * - how to handle PUT when the target is read-only but it could be written to
  *   a higher priority ResourceSet that is read-write
  */
+
+/**
+ * web 项目中的资源代表
+ */
 public interface WebResourceRoot extends Lifecycle {
     /**
      * Obtain the object that represents the resource at the given path. Note
@@ -93,6 +97,8 @@ public interface WebResourceRoot extends Lifecycle {
      *              of the web application. It must start with '/'.
      *
      * @return  The object that represents the resource at the given path
+     *
+     * 根据传入的相对于 web 应用的资源文件路径，返回该资源对象
      */
     WebResource getResource(String path);
 
@@ -108,6 +114,8 @@ public interface WebResourceRoot extends Lifecycle {
      *              of the web application. It must start with '/'.
      *
      * @return  The objects that represents the resource at the given path
+     *
+     * 返回一个资源路径数组对象
      */
     WebResource[] getResources(String path);
 

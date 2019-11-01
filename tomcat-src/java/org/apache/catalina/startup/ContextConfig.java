@@ -632,6 +632,7 @@ public class ContextConfig implements LifecycleListener {
                     // changed). Note: HostConfig.deployWar() takes care of
                     // ensuring that the correct XML file is used.
                     // This will be a NO-OP if the WAR is unchanged.
+                    // 解压 war 文件
                     ExpandWar.expand(host, war, pathName);
                 }
             } else {
@@ -1110,6 +1111,7 @@ public class ContextConfig implements LifecycleListener {
         WebXml webXml = createWebXml();
 
         // Parse context level web.xml
+        // 解析容器级别的 web.xml
         InputSource contextWebXml = getContextWebXmlSource();
         if (!webXmlParser.parseWebXml(contextWebXml, webXml, false)) {
             ok = false;
@@ -1790,6 +1792,7 @@ public class ContextConfig implements LifecycleListener {
                     }
                 }
                 else {
+                    // 获取 servletContext 下面 web.xml 文件对象流
                     stream = servletContext.getResourceAsStream
                         (Constants.ApplicationWebXml);
                     try {
