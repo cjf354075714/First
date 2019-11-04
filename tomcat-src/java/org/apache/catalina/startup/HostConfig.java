@@ -580,6 +580,7 @@ public class HostConfig implements LifecycleListener {
                 try {
                     // digester 解析 Context.xml
                     // 此时就会解析到 docBase 这个目录，这个目录就是我们设置的 web 应用的根目录
+                    // 一般来说，context 只会配置两个参数：应用文件的相对绝对路径，应用访问的路径
                     context = (Context) digester.parse(fis);
                 } catch (Exception e) {
                     log.error(sm.getString(

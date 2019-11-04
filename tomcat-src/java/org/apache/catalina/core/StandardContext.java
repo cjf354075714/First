@@ -4921,7 +4921,7 @@ public class StandardContext extends ContainerBase
         if(log.isDebugEnabled())
             log.debug("Starting " + getBaseName());
 
-        // Send j2ee.state.starting notification
+        // 发布正在启动的 JMX 通知
         if (this.getObjectName() != null) {
             Notification notification = new Notification("j2ee.state.starting",
                     this.getObjectName(), sequenceNumber.getAndIncrement());
