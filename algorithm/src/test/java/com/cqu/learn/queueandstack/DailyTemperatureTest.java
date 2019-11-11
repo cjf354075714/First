@@ -1,5 +1,6 @@
-package com.cqu.learn.normal;
+package com.cqu.learn.queueandstack;
 
+import com.cqu.learn.queueandstack.DailyTemperature;
 import org.junit.Test;
 
 /**

@@ -1,4 +1,4 @@
-package com.cqu.learn.dynamicprogress;
+package com.cqu.learn.queueandstack;
 
 /**
  * @author Feng

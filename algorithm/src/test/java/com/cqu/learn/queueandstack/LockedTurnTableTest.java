@@ -1,5 +1,6 @@
-package com.cqu.learn.bfs;
+package com.cqu.learn.queueandstack;
 
+import com.cqu.learn.queueandstack.LockedTurnTable;
 import org.junit.Test;
 
 /**

@@ -1,5 +1,6 @@
-package com.cqu.learn.dynamicprogress;
+package com.cqu.learn.queueandstack;
 
+import com.cqu.learn.queueandstack.CompleteSquare;
 import org.junit.Test;
 
 /**

@@ -1,4 +1,4 @@
-package com.cqu.learn.normal;
+package com.cqu.learn.queueandstack;
 
 import javax.xml.transform.Result;
 import java.util.Stack;

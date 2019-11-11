@@ -1,4 +1,4 @@
-package com.cqu.learn.bfs;
+package com.cqu.learn.queueandstack;
 
 import java.util.LinkedList;
 import java.util.List;
