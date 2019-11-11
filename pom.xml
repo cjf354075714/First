@@ -12,10 +12,10 @@
     <module>base</module>
     <module>tomcat</module>
     <module>designPattern</module>
-    <module>algorithm</module>
     <module>operationSystem</module>
     <module>network</module>
     <module>tomcat-src</module>
+    <module>algorithm</module>
   </modules>
   <packaging>pom</packaging>
 
