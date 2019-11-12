@@ -101,4 +101,11 @@ public class RegexTest {
         Matcher matcher = pattern.matcher(str);
         System.err.println(matcher.matches());
     }
+
+    @Test
+    public void test9() {
+        Pattern pattern = Pattern.compile("\\d");
+        Matcher matcher = pattern.matcher("123");
+        System.out.println(matcher.matches());
+    }
 }

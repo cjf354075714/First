@@ -43,4 +43,18 @@ public class CompleteSquare {
         }
         return dp[n];
     }
+
+    public int numSquares2(int n) {
+        int[] dp = new int[n + 1];
+        for (int i = 0; i < n + 1; i++) {
+            dp[i] = i;
+        }
+        // 现在经行遍历
+        for (int j = 1; j <= dp.length; j++) {
+            for (int k = 1; k * k <= j; k++) {
+                dp[j] = Math.min(dp[j], dp[j - k*k] + 1);
+            }
+        }
+        return dp[n];
+    }
 }
