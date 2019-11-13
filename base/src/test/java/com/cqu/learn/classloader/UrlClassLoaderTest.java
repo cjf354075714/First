@@ -2,6 +2,7 @@ package com.cqu.learn.classloader;
 
 import org.junit.Test;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -24,5 +25,11 @@ public class UrlClassLoaderTest {
         Method method = instance.getClass().getMethod("add", int.class, int.class);
         int s = (int)method.invoke(null, 1, 2);
         System.out.println(s);
+        try {
+			classLoader.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 }

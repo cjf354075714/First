@@ -15,7 +15,8 @@ public class Receiver extends Thread {
         return in;
     }
 
-    private void readMessageOnce() {
+    @SuppressWarnings("unused")
+	private void readMessageOnce() {
         byte[] buf = new byte[2048];
         try {
             int len = in.read(buf);

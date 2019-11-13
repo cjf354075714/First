@@ -104,8 +104,15 @@ public class RegexTest {
 
     @Test
     public void test9() {
-        Pattern pattern = Pattern.compile("\\d");
-        Matcher matcher = pattern.matcher("123");
+        Pattern pattern = Pattern.compile("(-\\d+)|(\\d+)");
+        Matcher matcher = pattern.matcher("-10");
+        System.out.println(matcher.matches());
+    }
+
+    @Test
+    public void test10() {
+        Pattern pattern = Pattern.compile("[+\\-*/]");
+        Matcher matcher = pattern.matcher("/");
         System.out.println(matcher.matches());
     }
 }

@@ -3,7 +3,6 @@ package com.cqu.learn.utils.digester;
 import org.apache.commons.digester3.Digester;
 import org.junit.Test;
 
-import java.io.File;
 import java.net.URL;
 
 /**

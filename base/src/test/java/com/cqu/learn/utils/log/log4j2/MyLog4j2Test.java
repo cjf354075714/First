@@ -8,7 +8,7 @@ import org.junit.Test;
  * @author Feng
  * @date 2019/10/28
  */
-public class Log4j2Test {
+public class MyLog4j2Test {
 
     @Test
     public void test() {

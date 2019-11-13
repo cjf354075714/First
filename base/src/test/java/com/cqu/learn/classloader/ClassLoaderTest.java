@@ -12,6 +12,7 @@ public class ClassLoaderTest {
     public void test() throws ClassNotFoundException {
         System.err.print(System.getProperty("java.ext.dir"));
         ClassLoader system = ClassLoader.getSystemClassLoader();
-        Class<?> object = system.loadClass("");
+        @SuppressWarnings("unused")
+		Class<?> object = system.loadClass("");
     }
 }

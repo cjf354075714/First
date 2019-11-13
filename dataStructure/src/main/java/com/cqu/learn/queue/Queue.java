@@ -1,6 +1,5 @@
 package com.cqu.learn.queue;
 
-import java.util.List;
 
 /**
  * @author Feng

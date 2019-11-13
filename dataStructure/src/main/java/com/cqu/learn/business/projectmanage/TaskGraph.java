@@ -21,4 +21,44 @@ public class TaskGraph {
 
     }
 
+	public Link[] getLinks() {
+		return links;
+	}
+
+	public void setLinks(Link[] links) {
+		this.links = links;
+	}
+
+	public Task[] getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(Task[] tasks) {
+		this.tasks = tasks;
+	}
+
+	public boolean[] getIsVisited() {
+		return isVisited;
+	}
+
+	public void setIsVisited(boolean[] isVisited) {
+		this.isVisited = isVisited;
+	}
+
+	public int[][] getEdges() {
+		return edges;
+	}
+
+	public void setEdges(int[][] edges) {
+		this.edges = edges;
+	}
+
+	public int getLength() {
+		return length;
+	}
+
+	public void setLength(int length) {
+		this.length = length;
+	}
+
 }

@@ -15,5 +15,6 @@ public class PrintStreamTest {
         File file = new File("D:/cjf/IDEAProject/learn/base/src/main/java/com/cqu/learn/io/file.txt");
         PrintStream printStream = new PrintStream(new FileOutputStream(file));
         printStream.println(123);
+        printStream.close();
     }
 }

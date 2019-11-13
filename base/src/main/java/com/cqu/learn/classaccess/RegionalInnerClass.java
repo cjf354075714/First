@@ -7,7 +7,8 @@ package com.cqu.learn.classaccess;
 public class RegionalInnerClass {
 
     {
-        class Inner {
+        @SuppressWarnings("unused")
+		class Inner {
             private int i = 0;
         }
     }

@@ -10,7 +10,7 @@ public class CycleQueueTest {
 
     @Test
     public void test() throws Exception {
-        CycleQueue cycleQueue = new CycleQueue(5);
+        CycleQueue<Object> cycleQueue = new CycleQueue<>(5);
         cycleQueue.enQueue(1);
         System.err.println(cycleQueue.toString());
         cycleQueue.deQueue();

@@ -1,6 +1,5 @@
 package com.cqu.learn.utils.log.log4j2;
 
-import org.apache.logging.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

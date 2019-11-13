@@ -3,7 +3,6 @@ package com.cqu.learn.io.exercise;
 import org.junit.Test;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 /**
  * @author Feng

@@ -13,11 +13,11 @@ public class FileReaderTest {
     @Test
     public void test() {
         File file = new File("D:/cjf/IDEAProject/learn/base/src/main/java/com/cqu/learn/io/file.txt");
-        char[] message = new char[1024];
+        @SuppressWarnings("unused")
+		char[] message = new char[1024];
         try {
             Reader fileReader = new FileReader(file);
             int single = fileReader.read();
-            byte s = (byte) (single);
             System.err.println(single);
             System.err.println((char) single);
 //            int i = fileReader.read(message);

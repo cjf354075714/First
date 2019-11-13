@@ -7,7 +7,8 @@ import java.io.*;
  * @date 2019/10/28
  */
 public class FileClassLoader extends ClassLoader {
-    private String rootDir;
+    @SuppressWarnings("unused")
+	private String rootDir;
 
     public FileClassLoader(String rootDir) {
         this.rootDir = rootDir;
@@ -34,6 +35,7 @@ public class FileClassLoader extends ClassLoader {
                 byteArrayOutputStream.write(buffer, 0, length);
             }
             byte[] classByte = byteArrayOutputStream.toByteArray();
+            bufferedInputStream.close();
             return defineClass(name, classByte, 0, classByte.length);
         } catch (IOException e) {
             e.printStackTrace();

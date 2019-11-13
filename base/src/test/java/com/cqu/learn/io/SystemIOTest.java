@@ -3,8 +3,6 @@ package com.cqu.learn.io;
 import org.junit.Test;
 
 import java.io.*;
-import java.lang.reflect.Member;
-import java.nio.Buffer;
 
 /**
  * @author Feng
@@ -23,7 +21,8 @@ public class SystemIOTest {
      *
      * 这里的预期之外的问题是输入流阻塞线程等待输出，然后输出流也被阻塞了
      */
-    private static void fun() {
+    @SuppressWarnings("unused")
+	private static void fun() {
         try {
             Reader inputStreamReader = new InputStreamReader(System.in);
             Reader reader = new BufferedReader(inputStreamReader);

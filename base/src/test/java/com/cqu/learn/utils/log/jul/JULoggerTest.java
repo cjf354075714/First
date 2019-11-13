@@ -24,7 +24,8 @@ public class JULoggerTest {
         // 创建简单格式对象
         SimpleFormatter simpleFormatter = new SimpleFormatter();
         // 创建 XML 格式配置对象
-        XMLFormatter xmlFormatter = new XMLFormatter();
+        @SuppressWarnings("unused")
+		XMLFormatter xmlFormatter = new XMLFormatter();
         // 指定文件输入的目录
         FileHandler fileHandler = new FileHandler("jul.log");
         // 指定该日志输入到文件的等级

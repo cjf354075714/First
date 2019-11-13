@@ -3,8 +3,6 @@ package com.cqu.learn.socket;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;

@@ -1,6 +1,5 @@
 package com.cqu.learn.stack;
 
-import com.cqu.learn.business.projectmanage.RelationType;
 
 /**
  * @author Feng
@@ -67,7 +66,8 @@ public class MinStack implements Stack {
         private Node next;
         private int data;
 
-        public Node() {
+        @SuppressWarnings("unused")
+		public Node() {
         }
 
         public Node(Node prev, Node next, int data) {
@@ -76,15 +76,18 @@ public class MinStack implements Stack {
             this.data = data;
         }
 
-        public Node getPrev() {
+        @SuppressWarnings("unused")
+		public Node getPrev() {
             return prev;
         }
 
-        public void setPrev(Node prev) {
+        @SuppressWarnings("unused")
+		public void setPrev(Node prev) {
             this.prev = prev;
         }
 
-        public Node getNext() {
+        @SuppressWarnings("unused")
+		public Node getNext() {
             return next;
         }
 
@@ -92,11 +95,13 @@ public class MinStack implements Stack {
             this.next = next;
         }
 
-        public int getData() {
+        @SuppressWarnings("unused")
+		public int getData() {
             return data;
         }
 
-        public void setData(int data) {
+        @SuppressWarnings("unused")
+		public void setData(int data) {
             this.data = data;
         }
 
