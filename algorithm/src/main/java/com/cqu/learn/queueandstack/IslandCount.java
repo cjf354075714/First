@@ -74,7 +74,7 @@ public class IslandCount {
      * @param grid 二维数组
      * @return 岛屿数量
      */
-    public int numIslands2(char[][] grid) {
+    public static int numIslands2(char[][] grid) {
         int sum = 0;
         int row = grid.length;
         int col = grid[0].length;
@@ -89,7 +89,7 @@ public class IslandCount {
         return sum;
     }
 
-    private void dfs(int i, int j, char[][] grid) {
+    private static void dfs(int i, int j, char[][] grid) {
         int row = grid.length;
         int col = grid[0].length;
         if (i < 0 || j < 0 || i >= row || j >= col || grid[i][j] == '0') {
