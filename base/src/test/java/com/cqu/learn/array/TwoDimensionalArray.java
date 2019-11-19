@@ -17,4 +17,10 @@ public class TwoDimensionalArray {
         };
         System.err.println(s[2][1]);
     }
+
+    @Test
+    public void test1() {
+        Object array = new int[]{1, 2};
+        System.out.println(array.getClass().isArray());
+    }
 }
