@@ -140,7 +140,7 @@
         <!-- Logger 节点是用于配置单独的类或者包日志输出管理，比如我想过滤掉某个包下的所有日志打印-->
         <!--就直接在这里新增一个 Logger，指定该包名和日志等级，但是普通指定输出或者 root 节点相重复-->
         <!--不管 root 配置的路径是什么，只要符合了单独配置 logger 的等级，就会输出两份，在 logger 上设置 additivity = false 来避免-->
-        <Logger name="com.cqu.learn.utils.log.log4j2.Log4j2Test" level="TRACE" additivity="false">
+        <Logger name="com.cqu.learn.base.utils.log.log4j2.Log4j2Test" level="TRACE" additivity="false">
             <AppenderRef ref="console"/>
             <AppenderRef ref="rooLingTraceFile"/>
             <AppenderRef ref="rooLingDebugFile"/>
