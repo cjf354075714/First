@@ -11,5 +11,7 @@
 
     <artifactId>zookeeper</artifactId>
 
-
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+    </build>
 </project>
