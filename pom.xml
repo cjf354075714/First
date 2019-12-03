@@ -18,6 +18,9 @@
     <module>algorithm</module>
     <module>mybatis</module>
       <module>spring</module>
+      <module>architecture</module>
+      <module>dubbo</module>
+      <module>zookeeper</module>
   </modules>
   <packaging>pom</packaging>
 
