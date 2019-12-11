@@ -63,3 +63,4 @@ modules/jdbc-pool/includes
 webapps/docs/jdbc-pool.xml
 tomcat-src/catalina-home/webapps
 tomcat-src/target
+/dist/
